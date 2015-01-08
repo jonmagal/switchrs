@@ -6,7 +6,7 @@ Created on 28/05/2014
 '''
 
 PATH            = '/home/jon/Dropbox/Academia/MovieLens/'
-PATH            = '/home/seu-madruga/Dropbox/Academia/MovieLens/'
+PATH            = '/home/seu-madruga/Dropbox/Academia/Datasets/MovieLens/'
 USERS           = 71567
 MOVIES          = 10681 
 DATASET_PATH    = PATH + 'ml-10M100K/'
