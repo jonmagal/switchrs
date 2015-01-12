@@ -30,12 +30,15 @@ class DataSet(object):
         dataset_conf = DATASET_CONF[self.id]
         folders_conf = dataset_conf['folders']
         
-        for folder_conf in folders_conf:
+        for folder_conf in folders_conf[0:1]:
             folder              = Folder()
             folder.id           = folder_conf['id']
             folder.train_file   = folder_conf['train']
             folder.test_file    = folder_conf['test']
             self.folders.append(folder)
+        
+        if self.id == 'movielens':  
+            self.movies_file = dataset_conf['movies']
             
     def _load_sframes(self):
         from graphlab.data_structures.sframe import SFrame
@@ -53,7 +56,7 @@ class DataSet(object):
                 test_sframe.remove_columns(column_names = ['X2', 'X4', 'X6', 'X7'])
                 test_sframe.rename({'X1': 'user_id', 'X3':'item_id', 'X5': 'rating'})
                 folder.test_sframe = test_sframe
-                
+            
                 
 class DatasetManager():
     
