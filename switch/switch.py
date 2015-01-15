@@ -26,13 +26,12 @@ class Switch(object):
         folder = dataset_switch.folders[0]
         data_train = folder.train_file
         
+        X = np.genfromtxt(fname = data_train, delimiter = ',', usecols = range(3, 29), skip_header = 1, 
+                          missing_values = '', filling_values = 0)
+        Y = np.genfromtxt(fname = data_train, delimiter = ',', usecols = [29], ski_header = 1)
         
-        
-        X = np.loadtxt(fname = data_train, converters = {None: 0}, usecols = range(3, 29), skiprows = 1)
-        Y = np.loadtxt(fname = data_train, converters = {None: 0}, usecols = [29], skiprows = 1)
-        
-        clf = GaussianNB()
-        clf.fit(X, Y)
+        naive = GaussianNB()
+        naive.fit(X, Y)
         
     def prepare_dataset(self, dataset, dataset_switch, model_manager):  
         self._prepare_movielens(dataset, dataset_switch, model_manager)
@@ -81,7 +80,7 @@ class Switch(object):
         
         file_save = dataset_switch.folders[0].train_file
         
-        s7.save(file_save, format='csv')
+        s7.save(file_save, format = 'csv')
         
     def _process_movies(self, filename):
         from graphlab.data_structures.sframe import SFrame
@@ -113,5 +112,5 @@ s = Switch()
 solution = map(lambda t, *p: s.get_best_class(t, *p), target, 
                                   *[p1, p2])
 print solution
-"""
 from graphlab.data_structures.sframe import SFrame
+"""

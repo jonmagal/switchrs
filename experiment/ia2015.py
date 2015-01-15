@@ -8,7 +8,6 @@ Created on 10/01/2015
 from recommender.dataset import DataSet
 from recommender.rec_model import ModelManager
 from switch.switch import Switch
-from scipy import sparse
 
 class Evaluation():
 
@@ -20,6 +19,7 @@ class Evaluation():
     def __init__(self, dataset_id, dataset_switch_id):
         self.model_manager = ModelManager()
         self.dataset = DataSet(dataset_id = dataset_id, sframe = True)
+        
         self.dataset_switch = DataSet(dataset_id = dataset_switch_id, sframe = False)
         self.switch = Switch()
         
@@ -29,13 +29,14 @@ class Evaluation():
     def _test_rec_models(self):
         self.model_manager.test_models(dataset = self.dataset)
     
-    def _set_datasets_switch(self):   
+    def _create_datasets_switch(self):   
+        file_save = self.dataset_switch.folders[0].train_file
+        print file_save
         self.switch.prepare_dataset(dataset = self.dataset, dataset_switch = self.dataset_switch, 
                                     model_manager = self.model_manager)
         
     def _train_switch(self):
         self.switch.train(dataset_switch = self.dataset_switch)
-        pass
     
     def _test_switch(self):
         pass
@@ -46,10 +47,10 @@ class Evaluation():
     def run(self):
         #self._train_rec_models()
         #self._test_rec_models()
-        #self._set_datasets_switch()
+        #self._create_datasets_switch()
         self._train_switch()
         
-        self._test_switch()
+        #self._test_switch()
         self._evaluate()
         
 if __name__ == '__main__':

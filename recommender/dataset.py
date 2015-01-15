@@ -18,15 +18,16 @@ class Folder(object):
 class DataSet(object):
     
     id      = None
-    folders = []
+    folders = None
     
     def __init__(self, dataset_id, sframe = False):
         self.id = dataset_id
         self._load_folders()
-        
-        self._load_sframes()
+        if sframe == True:
+            self._load_sframes()
         
     def _load_folders(self):
+        self.folders = []
         dataset_conf = DATASET_CONF[self.id]
         folders_conf = dataset_conf['folders']
         
@@ -36,7 +37,7 @@ class DataSet(object):
             folder.train_file   = folder_conf['train']
             folder.test_file    = folder_conf['test']
             self.folders.append(folder)
-        
+            
         if self.id == 'movielens':  
             self.movies_file = dataset_conf['movies']
             
