@@ -46,9 +46,9 @@ class Evaluation():
         self._train_rec_models()
         self._test_rec_models()
         self._create_datasets_switch()
-        #self._train_switch()
+        self._train_switch()
         
-        #self._test_switch()
+        self._test_switch()
         self._evaluate()
         
 if __name__ == '__main__':
