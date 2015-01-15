@@ -66,7 +66,10 @@ class Switch(object):
             
             if os.path.exists(file_save):
                 print "Folder " + dataset_switch.id + " " + folder.id + " already prepared."
-                        
+                continue
+            
+            print "Preparing folder " + dataset_switch.id + " " + folder.id + "."
+            
             sframe = folder.train_sframe
             
             user_count_rating   = sframe.groupby(key_columns = 'user_id', operations = {'user_count_rating': agg.COUNT()})
