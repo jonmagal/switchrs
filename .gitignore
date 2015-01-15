@@ -44,6 +44,11 @@ coverage.xml
 *.mo
 *.pot
 
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
 # Django stuff:
 *.log
 
@@ -55,5 +60,6 @@ target/
 
 # Project
 main.py
-settings.py
 .settings/*
+local_settings.py
+.DS_Store
