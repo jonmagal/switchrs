@@ -5,9 +5,9 @@ Created on 10/01/2015
 
 @author: Jonathas Magalhães
 '''
-from recommender.dataset import DataSet
-from recommender.rec_model import ModelManager
-from switch.switch import Switch
+from recommender.dataset    import DataSet
+from recommender.rec_model  import ModelManager
+from switch.switch          import Switch
 
 class Evaluation():
 

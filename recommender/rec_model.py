@@ -7,12 +7,15 @@ Created on 10/09/2014
 '''
 
 import graphlab
-from graphlab.data_structures.sframe import SFrame
-from graphlab.toolkits.recommender import item_similarity_recommender, popularity_recommender
-from graphlab.toolkits.recommender import factorization_recommender
-from graphlab.toolkits.recommender.util import compare_models
 import os
-from settings import MODELS_CONF, REC_MODELS_PATH, REC_PREDICTION_PATH
+
+from graphlab.data_structures.sframe    import SFrame
+from graphlab.toolkits.recommender      import item_similarity_recommender, popularity_recommender
+from graphlab.toolkits.recommender      import factorization_recommender
+from graphlab.toolkits.recommender.util import compare_models
+
+from local_settings import REC_MODELS_PATH, REC_PREDICTION_PATH
+from settings       import MODELS_CONF
 
 
 class RecommendationModel(object):
