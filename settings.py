@@ -4,17 +4,7 @@ Created on 28/05/2014
 
 @author: Jonathas Magalhães
 '''
-PATH = '/Users/jon/Dropbox/Academia/'
-#PATH = '/home/seu-madruga/Dropbox/Academia/'
-
-DATASET_PATH    = '/Users/jon/Documents/'
-
-REC_MODELS_PATH     = PATH + 'Artigos_Escritos/AI_2015/analise/rec_models/'
-REC_PREDICTION_PATH = PATH + 'Artigos_Escritos/AI_2015/analise/rec_predictions/'
-
-MOVIELENS_PATH      = DATASET_PATH + 'MovieLens/ml-10M100K/' 
-
-MOVIELENS_SWITCH_PATH = DATASET_PATH + 'MovieLens/ml-10M100K-switch/' 
+from local_settings import MOVIELENS_PATH, MOVIELENS_SWITCH_PATH
 
 DATASET_CONF = {'movielens': {
                   'movies':  MOVIELENS_PATH + 'movies.dat',
@@ -68,8 +58,8 @@ DATASET_CONF = {'movielens': {
                         },
                        
                         {'id'   : 'r5', 
-                        'train' : MOVIELENS_PATH + 'r5.train.csv',
-                        'test'  : MOVIELENS_PATH + 'r5.test.csv',
+                        'train' : MOVIELENS_SWITCH_PATH + 'r5.train.csv',
+                        'test'  : MOVIELENS_SWITCH_PATH + 'r5.test.csv',
                         },
                        ]
                   }
