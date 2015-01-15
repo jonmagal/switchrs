@@ -8,38 +8,34 @@ Created on 10/01/2015
 from recommender.dataset import DataSet
 from recommender.rec_model import ModelManager
 from switch.switch import Switch
+from scipy import sparse
 
 class Evaluation():
 
-    dataset_id      = None
     dataset         = None
     model_manager   = None
     switch          = None
+    dataset_switch  = None
     
-    def __init__(self, dataset_id):
-        self.dataset_id = dataset_id
+    def __init__(self, dataset_id, dataset_switch_id):
         self.model_manager = ModelManager()
+        self.dataset = DataSet(dataset_id = dataset_id, sframe = True)
+        self.dataset_switch = DataSet(dataset_id = dataset_switch_id, sframe = False)
+        self.switch = Switch()
         
-    def _load_datasets(self, dataset_id = None):
-        if dataset_id is not None:
-            self.dataset_id = dataset_id
-        if self.dataset_id is None:
-            return'Error'
-        else:
-            self.dataset = DataSet(dataset_id = self.dataset_id, sframe = True)
-
     def _train_rec_models(self):
         self.model_manager.train_models(dataset = self.dataset)
         
     def _test_rec_models(self):
         self.model_manager.test_models(dataset = self.dataset)
     
-    def _set_datasets_switch(self):
-        self.switch = Switch()
-        self.switch.prepare_dataset(dataset = self.dataset)
+    def _set_datasets_switch(self):   
+        self.switch.prepare_dataset(dataset = self.dataset, dataset_switch = self.dataset_switch, 
+                                    model_manager = self.model_manager)
         
     def _train_switch(self):
-        self.model_manager.test(dataset = self.dataset)
+        self.switch.train(dataset_switch = self.dataset_switch)
+        pass
     
     def _test_switch(self):
         pass
@@ -47,8 +43,7 @@ class Evaluation():
     def _evaluate(self):
         pass
 
-    def run(self, dataset_id = None):
-        self._load_datasets()
+    def run(self):
         #self._train_rec_models()
         #self._test_rec_models()
         #self._set_datasets_switch()
@@ -58,5 +53,5 @@ class Evaluation():
         self._evaluate()
         
 if __name__ == '__main__':
-    evaluation = Evaluation(dataset_id = 'movielens')
+    evaluation = Evaluation(dataset_id = 'movielens', dataset_switch_id = 'movielens_switch')
     evaluation.run()

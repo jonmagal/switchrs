@@ -5,9 +5,9 @@ Created on 28/05/2014
 @author: Jonathas Magalhães
 '''
 PATH = '/Users/jon/Dropbox/Academia/'
-PATH = '/home/seu-madruga/Dropbox/Academia/'
+#PATH = '/home/seu-madruga/Dropbox/Academia/'
 
-DATASET_PATH    = PATH + 'Datasets/'
+DATASET_PATH    = '/Users/jon/Documents/'
 
 REC_MODELS_PATH     = PATH + 'Artigos_Escritos/AI_2015/analise/rec_models/'
 REC_PREDICTION_PATH = PATH + 'Artigos_Escritos/AI_2015/analise/rec_predictions/'
@@ -48,28 +48,28 @@ DATASET_CONF = {'movielens': {
                 'movielens_switch': {
                   'folders'  : [ 
                        {'id'    : 'r1', 
-                        'train' : MOVIELENS_SWITCH_PATH + 'r1.train',
-                        'test'  : MOVIELENS_SWITCH_PATH + 'r1.test',
+                        'train' : MOVIELENS_SWITCH_PATH + 'r1.train.csv',
+                        'test'  : MOVIELENS_SWITCH_PATH + 'r1.test.csv',
                         },
     
                         {'id'   : 'r2', 
-                        'train' : MOVIELENS_SWITCH_PATH + 'r2.train',
-                        'test'  : MOVIELENS_SWITCH_PATH + 'r2.test',
+                        'train' : MOVIELENS_SWITCH_PATH + 'r2.train.csv',
+                        'test'  : MOVIELENS_SWITCH_PATH + 'r2.test.csv',
                         },
                        
                         {'id'   : 'r3', 
-                        'train' : MOVIELENS_SWITCH_PATH + 'r3.train',
-                        'test'  : MOVIELENS_SWITCH_PATH + 'r3.test',
+                        'train' : MOVIELENS_SWITCH_PATH + 'r3.train.csv',
+                        'test'  : MOVIELENS_SWITCH_PATH + 'r3.test.csv',
                         },
                        
                         {'id'   : 'r4', 
-                        'train' : MOVIELENS_SWITCH_PATH + 'r4.train',
-                        'test'  : MOVIELENS_SWITCH_PATH + 'r4.test',
+                        'train' : MOVIELENS_SWITCH_PATH + 'r4.train.csv',
+                        'test'  : MOVIELENS_SWITCH_PATH + 'r4.test.csv',
                         },
                        
                         {'id'   : 'r5', 
-                        'train' : MOVIELENS_PATH + 'r5.train',
-                        'test'  : MOVIELENS_PATH + 'r5.test',
+                        'train' : MOVIELENS_PATH + 'r5.train.csv',
+                        'test'  : MOVIELENS_PATH + 'r5.test.csv',
                         },
                        ]
                   }

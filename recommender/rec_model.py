@@ -78,8 +78,14 @@ class RecommendationModel(object):
                 predictions = model.predict(dataset = folder.test_sframe)
                 predictions.save(filename = prediction_file)
                 print 'RecommendationModel ' + self.id + ' tested.'
+    
+    def get_prediction_switch(self, dataset, folder):
+        model_file = self._get_model_file(dataset, folder)
+        model = graphlab.load_model(location = model_file)
+        predictions = model.predict(dataset = folder.train_sframe)
+        return predictions
+    
         
-
 class ModelManager(object):
     
     models = []
@@ -88,7 +94,7 @@ class ModelManager(object):
         self._set_models()
         
     def _set_models(self):
-        for model_id in MODELS_CONF.keys():
+        for model_id in sorted(MODELS_CONF.keys()):
             model = RecommendationModel()
             
             model.id            = model_id
@@ -109,3 +115,7 @@ class ModelManager(object):
     def test_models(self, dataset):
         for model in self.models:
             model.test_model(dataset = dataset)
+    
+    def get_predictions_switch(self, dataset, folder):
+        predictions = [ model.get_prediction_switch(dataset, folder) for model in self.models]
+        return predictions
