@@ -30,8 +30,6 @@ class Evaluation():
         self.model_manager.test_models(dataset = self.dataset)
     
     def _create_datasets_switch(self):   
-        file_save = self.dataset_switch.folders[0].train_file
-        print file_save
         self.switch.prepare_dataset(dataset = self.dataset, dataset_switch = self.dataset_switch, 
                                     model_manager = self.model_manager)
         
@@ -45,10 +43,10 @@ class Evaluation():
         pass
 
     def run(self):
-        #self._train_rec_models()
-        #self._test_rec_models()
-        #self._create_datasets_switch()
-        self._train_switch()
+        self._train_rec_models()
+        self._test_rec_models()
+        self._create_datasets_switch()
+        #self._train_switch()
         
         #self._test_switch()
         self._evaluate()

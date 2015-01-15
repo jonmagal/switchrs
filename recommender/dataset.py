@@ -31,7 +31,7 @@ class DataSet(object):
         dataset_conf = DATASET_CONF[self.id]
         folders_conf = dataset_conf['folders']
         
-        for folder_conf in folders_conf[0:1]:
+        for folder_conf in folders_conf:
             folder              = Folder()
             folder.id           = folder_conf['id']
             folder.train_file   = folder_conf['train']
@@ -58,7 +58,11 @@ class DataSet(object):
                 test_sframe.rename({'X1': 'user_id', 'X3':'item_id', 'X5': 'rating'})
                 folder.test_sframe = test_sframe
             
-                
+    def get_folder(self, folder_id):
+        for f in self.folders:
+            if f.id == folder_id:
+                return f
+                    
 class DatasetManager():
     
     def get_datasets(self):
