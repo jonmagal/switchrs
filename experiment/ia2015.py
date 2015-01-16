@@ -18,7 +18,7 @@ class Evaluation():
     
     def __init__(self, dataset_id, dataset_switch_id):
         self.model_manager = ModelManager()
-        self.dataset = DataSet(dataset_id = dataset_id, sframe = True)
+        self.dataset = DataSet(dataset_id = dataset_id, sframe = False)
         
         self.dataset_switch = DataSet(dataset_id = dataset_switch_id, sframe = False)
         self.switch = Switch()
@@ -43,9 +43,9 @@ class Evaluation():
         pass
 
     def run(self):
-        self._train_rec_models()
-        self._test_rec_models()
-        self._create_datasets_switch()
+        #self._train_rec_models()
+        #self._test_rec_models()
+        #self._create_datasets_switch()
         self._train_switch()
         
         self._test_switch()

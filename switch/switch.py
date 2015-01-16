@@ -4,8 +4,7 @@ Created on 10/01/2015
 
 @author: Jonathas Magalhães
 '''
-import graphlab.aggregate as agg
-from graphlab.data_structures.sarray import SArray
+
 import numpy as np
 from local_settings import SWITCH_MODELS_PATH
 #import numpy
@@ -39,7 +38,7 @@ class Switch(object):
         
             X = np.genfromtxt(fname = data_train, delimiter = ',', usecols = range(3, 29), skip_header = 1, 
                               missing_values = '', filling_values = 0)
-            Y = np.genfromtxt(fname = data_train, delimiter = ',', usecols = [29], ski_header = 1)
+            Y = np.genfromtxt(fname = data_train, delimiter = ',', usecols = [29], skip_header = 1)
         
             naive = GaussianNB()
             naive.fit(X, Y)
@@ -56,6 +55,8 @@ class Switch(object):
         
     def _prepare_movielens(self, dataset, dataset_switch, model_manager):
         import os
+        import graphlab.aggregate as agg
+        from graphlab.data_structures.sarray import SArray
         
         print "Starting to process movies."
         movie_sframe = self._process_movies(filename = dataset.movies_file)
@@ -105,6 +106,7 @@ class Switch(object):
             s7.save(file_save, format = 'csv')
         
     def _process_movies(self, filename):
+        from graphlab.data_structures.sarray import SArray
         from graphlab.data_structures.sframe import SFrame
         
         sframe = SFrame.read_csv(url = filename, delimiter = '=', header = False, 
