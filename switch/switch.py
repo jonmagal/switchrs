@@ -48,22 +48,27 @@ class Switch(object):
             joblib.dump(naive, file_save) 
             
     def prepare_dataset(self, dataset, dataset_switch, model_manager):  
-        self._prepare_movielens(dataset, dataset_switch, model_manager)
-    
-    def get_best_class(self, target, *predictions):
-        return np.argmin(np.absolute(np.subtract(predictions,target)))
-        
-    def _prepare_movielens(self, dataset, dataset_switch, model_manager):
-        import os
-        import graphlab.aggregate as agg
-        from graphlab.data_structures.sarray import SArray
-        
         print "Starting to process movies."
         movie_sframe = self._process_movies(filename = dataset.movies_file)
         print "Movies processed."
         
+        self._prepare_movielens(dataset, dataset_switch, model_manager, movie_sframe, dataset_type = 'train')
+        self._prepare_movielens(dataset, dataset_switch, model_manager, movie_sframe, dataset_type = 'test')
+    
+    def get_best_class(self, target, *predictions):
+        return np.argmin(np.absolute(np.subtract(predictions,target)))
+        
+    def _prepare_movielens(self, dataset, dataset_switch, model_manager, movie_sframe, dataset_type):
+        import os
+        import graphlab.aggregate as agg
+        from graphlab.data_structures.sarray import SArray
+        
         for folder in dataset.folders:
-            file_save       = dataset_switch.get_folder(folder.id).train_file
+            
+            if dataset_type == 'train':
+                file_save       = dataset_switch.get_folder(folder.id).train_file
+            else:
+                file_save       = dataset_switch.get_folder(folder.id).test_file
             
             if os.path.exists(file_save):
                 print "Folder " + dataset_switch.id + " " + folder.id + " already prepared."
@@ -71,22 +76,22 @@ class Switch(object):
             
             print "Preparing folder " + dataset_switch.id + " " + folder.id + "."
             
-            sframe = folder.train_sframe
+            train_sframe = folder.train_sframe
             
-            user_count_rating   = sframe.groupby(key_columns = 'user_id', operations = {'user_count_rating': agg.COUNT()})
-            user_mean_rating    = sframe.groupby(key_columns = 'user_id', 
+            user_count_rating   = train_sframe.groupby(key_columns = 'user_id', operations = {'user_count_rating': agg.COUNT()})
+            user_mean_rating    = train_sframe.groupby(key_columns = 'user_id', 
                                                  operations = {'user_mean_rating': agg.MEAN('rating')})
-            user_sd_rating      = sframe.groupby(key_columns = 'user_id', 
+            user_sd_rating      = train_sframe.groupby(key_columns = 'user_id', 
                                                  operations = {'user_sd_rating': agg.STD('rating')})
             
-            item_count_rating   = sframe.groupby(key_columns = 'item_id', operations = {'item_count_rating': agg.COUNT()})
-            item_mean_rating    = sframe.groupby(key_columns = 'item_id', 
+            item_count_rating   = train_sframe.groupby(key_columns = 'item_id', operations = {'item_count_rating': agg.COUNT()})
+            item_mean_rating    = train_sframe.groupby(key_columns = 'item_id', 
                                                  operations = {'item_mean_rating': agg.MEAN('rating')})
-            item_sd_rating      = sframe.groupby(key_columns = 'item_id', 
+            item_sd_rating      = train_sframe.groupby(key_columns = 'item_id', 
                                                  operations = {'item_sd_rating': agg.STD('rating')})
             
             
-            s1 = sframe.join(user_count_rating, on = 'user_id', how = 'left')
+            s1 = train_sframe.join(user_count_rating, on = 'user_id', how = 'left')
             s2 = s1.join(user_mean_rating, on = 'user_id', how = 'left')
             s3 = s2.join(user_sd_rating, on = 'user_id', how = 'left')
             s4 = s3.join(item_count_rating, on = 'item_id', how = 'left')
@@ -97,7 +102,7 @@ class Switch(object):
             #{'rating': 4.0, 'Sci-Fi': None, 'Crime': None, 'Romance': 1, 'item_id': 1393, 'Animation': None, 'Comedy': None, 'War': None, 'user_id': 14623, 'user_sd_rating': 0.8084393211002503, 'Fantasy': None, 'Horror': None, 'Film-Noir': None, 'Musical': None, 'Adventure': None, 'Thriller': None, 'Western': None, 'Mystery': None, 'item_sd_rating': 0.9265691984755607, 'Drama': 1, 'IMAX': None, 'Action': None, '(no genres listed)': None, 'Documentary': None, 'user_mean_rating': 3.3995983935743, 'user_count_rating': 498, 'item_count_rating': 10097, 'item_mean_rating': 3.6352381895612607, 'Children': None}
             
             predictions = model_manager.get_predictions_switch(dataset, folder)
-            target      = sframe.select_column(key = 'rating')
+            target      = train_sframe.select_column(key = 'rating')
             
             best_models = map(lambda t, *p: self.get_best_class(t, *p), target, *predictions)
             classes     = SArray(best_models)
@@ -126,6 +131,11 @@ class Switch(object):
         sframe.remove_columns(column_names = ['X3', ])
         movie_sframe = sframe.unpack('item_genre', column_name_prefix = '')
         
+        #Putting 0 where in the movies that does not have genre
+        column_names = movie_sframe.column_names()
+        for c in column_names:
+            movie_sframe = movie_sframe.fillna(c, 0)
+
         return movie_sframe
 """    
 p1 = SArray([1, 2, 3])
