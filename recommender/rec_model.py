@@ -10,12 +10,14 @@ import graphlab
 import os
 
 from graphlab.data_structures.sframe    import SFrame
+from graphlab.data_structures.sarray    import SArray
 from graphlab.toolkits.recommender      import item_similarity_recommender, popularity_recommender
 from graphlab.toolkits.recommender      import factorization_recommender
 from graphlab.toolkits.recommender.util import compare_models
 
 from local_settings import REC_MODELS_PATH, REC_PREDICTION_PATH
 from settings       import MODELS_CONF
+
 
 
 class RecommendationModel(object):
@@ -88,6 +90,10 @@ class RecommendationModel(object):
         predictions = model.predict(dataset = folder.train_sframe)
         return predictions
     
+    def get_prediction_test(self, dataset, folder):
+        prediction_file = self._get_prediction_file(dataset, folder)
+        predictions = SArray(prediction_file)
+        return predictions
         
 class ModelManager(object):
     
@@ -121,4 +127,8 @@ class ModelManager(object):
     
     def get_predictions_switch(self, dataset, folder):
         predictions = [ model.get_prediction_switch(dataset, folder) for model in self.models]
+        return predictions
+    
+    def get_predictions_test(self, dataset, folder):
+        predictions = [ model.get_prediction_test(dataset, folder) for model in self.models]
         return predictions

@@ -6,13 +6,16 @@ Created on 10/01/2015
 '''
 
 import numpy as np
-from local_settings import SWITCH_MODELS_PATH
+from local_settings import SWITCH_MODELS_PATH, SWITCH_CLASS_PREDICTION_PATH, SWITCH_RATING_PREDICTION_PATH, RESULTS_FILE
+
+
 #import numpy
 
 class Switch(object):
     '''
     classdocs
     '''
+    
     id                  = 'naive_bayes1'
     model_type          = 'naive_bayes'
     options             = None
@@ -26,8 +29,75 @@ class Switch(object):
     def _get_model_file(self, dataset, folder):
         return SWITCH_MODELS_PATH + self.id + '_' + dataset.id + '_' + folder.id + '.pkl'
         
-    def _get_prediction_file(self, dataset, folder):
-        return SWITCH_MODELS_PATH + self.id + '_' + dataset.id + '_' + folder.id + '.pkl'
+    def _get_class_prediction_file(self, dataset, folder):
+        return SWITCH_CLASS_PREDICTION_PATH + self.id + '_' + dataset.id + '_' + folder.id + '.csv'
+
+    def _get_rating_prediction_file(self, dataset, folder):
+        return SWITCH_RATING_PREDICTION_PATH + self.id + '_' + dataset.id + '_' + folder.id
+    
+    def _get_switch_prediction(self, switch_predictions, *cf_predictions):
+        return cf_predictions[switch_predictions]
+    
+    def evaluate(self, dataset, dataset_switch, model_manager):
+        from graphlab.data_structures.sarray import SArray
+        from graphlab.toolkits.evaluation import rmse
+        from util.util import save_sheet
+        
+        content = []
+        title = ['folder', ]
+        
+        
+        for model in model_manager.models:
+            title.append(model.id)
+        title.append(self.id)
+            
+        for folder in dataset.folders:
+            content_row = []
+            content_row.append(folder.id)
+            
+            test_sframe = folder.test_sframe
+            targets     = test_sframe.select_column(key = 'rating')
+            
+            rating_prediction_file  = self._get_rating_prediction_file(dataset_switch, folder)
+            switch_predictions = SArray(rating_prediction_file)
+            
+            for model in model_manager.models:
+                predictions = model.get_prediction_test(dataset, folder)
+                value = rmse(targets, predictions)
+                content_row.append(value)
+                
+            value = rmse(targets, switch_predictions)
+            content_row.append(value)
+            content.append(content_row)
+        
+        save_sheet(RESULTS_FILE, content, title)
+        
+    
+    def test(self, dataset, dataset_switch, model_manager):
+        from graphlab.data_structures.sframe import SFrame
+        from graphlab.data_structures.sarray import SArray
+        import os
+        
+        for folder in dataset.folders:
+            rating_prediction_file  = self._get_rating_prediction_file(dataset_switch, folder)
+            class_prediction_file   = self._get_class_prediction_file(dataset_switch, folder)
+            
+            if os.path.exists(rating_prediction_file):
+                print "Model " + self.id + " in " + dataset_switch.id + " " + folder.id + " already tested."
+                continue 
+            
+            cf_predictions      = model_manager.get_predictions_test(dataset, folder)
+            
+            
+            sf                  = SFrame.read_csv(class_prediction_file, header = True, quote_char = '"', 
+                                                  column_type_hints=[int, int])
+            switch_predictions  = sf.select_column(key = 'x') 
+            
+            rating_predictions  = map(lambda t, *p: self._get_switch_prediction(t, *p), 
+                                      switch_predictions, *cf_predictions)
+            
+            rating_array = SArray(rating_predictions)
+            rating_array.save(filename = rating_prediction_file)
     
     def train(self, dataset_switch):
         from sklearn.naive_bayes    import GaussianNB
@@ -89,14 +159,16 @@ class Switch(object):
             train_sframe = folder.train_sframe
             
             '''
-            user_count_rating   = train_sframe.groupby(key_columns = 'user_id', operations = {'user_count_rating': agg.COUNT()})
+            user_count_rating   = train_sframe.groupby(key_columns = 'user_id', 
+                                                        operations = {'user_count_rating': agg.COUNT()})
             user_mean_rating    = train_sframe.groupby(key_columns = 'user_id', 
                                                  operations = {'user_mean_rating': agg.MEAN('rating')})
             user_sd_rating      = train_sframe.groupby(key_columns = 'user_id', 
                                                  operations = {'user_sd_rating': agg.STD('rating')})
             '''
             
-            item_count_rating   = train_sframe.groupby(key_columns = 'item_id', operations = {'item_count_rating': agg.COUNT()})
+            item_count_rating   = train_sframe.groupby(key_columns = 'item_id', 
+                                                       operations = {'item_count_rating': agg.COUNT()})
             item_mean_rating    = train_sframe.groupby(key_columns = 'item_id', 
                                                  operations = {'item_mean_rating': agg.MEAN('rating')})
             item_sd_rating      = train_sframe.groupby(key_columns = 'item_id', 
@@ -160,14 +232,22 @@ class Switch(object):
             movie_sframe = movie_sframe.fillna(c, 0)
 
         return movie_sframe
-"""    
-p1 = SArray([1, 2, 3])
-p2 = SArray([3, 4, 2])
-target =  SArray([1, 3, 2])
+
+"""
+from graphlab.data_structures.sarray import SArray
+
+p1      = SArray([1, 2, 3])
+p2      = SArray([3, 4, 2])
+p3      = SArray([2, 3, 1])
+
+target  = SArray([1, 3, 2])
+
+classes = SArray([0, 1, 2])
 
 s = Switch()
-solution = map(lambda t, *p: s._get_best_class(t, *p), target, 
-                                  *[p1, p2])
+solution = map(lambda t, *p: s._get_best_class(t, *p), target, *[p1, p2])
 print solution
-from graphlab.data_structures.sframe import SFrame
+
+solution = map(lambda t, *p: s._get_switch_prediction(t, *p), classes, *[p1, p2, p3])
+print solution
 """
