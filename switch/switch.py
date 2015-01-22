@@ -52,25 +52,35 @@ class Switch(object):
         movie_sframe = self._process_movies(filename = dataset.movies_file)
         print "Movies processed."
         
-        self._prepare_movielens(dataset, dataset_switch, model_manager, movie_sframe, dataset_type = 'train')
-        self._prepare_movielens(dataset, dataset_switch, model_manager, movie_sframe, dataset_type = 'test')
+        self._prepare_movielens(dataset, dataset_switch, model_manager, movie_sframe)
     
-    def get_best_class(self, target, *predictions):
+    def _get_best_class(self, target, *predictions):
         return np.argmin(np.absolute(np.subtract(predictions,target)))
         
-    def _prepare_movielens(self, dataset, dataset_switch, model_manager, movie_sframe, dataset_type):
+    def _prepare_movielens(self, dataset, dataset_switch, model_manager, movie_sframe):
         import os
         import graphlab.aggregate as agg
         from graphlab.data_structures.sarray import SArray
         
         for folder in dataset.folders:
             
-            if dataset_type == 'train':
-                file_save       = dataset_switch.get_folder(folder.id).train_file
-            else:
-                file_save       = dataset_switch.get_folder(folder.id).test_file
+            test_file       = dataset_switch.get_folder(folder.id).test_file
+            train_file      = dataset_switch.get_folder(folder.id).train_file
             
-            if os.path.exists(file_save):
+            test    = False
+            train   = False
+            
+            
+            if os.path.exists(train_file):
+                print "Train file of the folder " + dataset_switch.id + " " + folder.id + " already prepared."
+                train = True
+            
+            if os.path.exists(test_file):
+                print "Test file of the folder " + dataset_switch.id + " " + folder.id + " already prepared."
+                test = True
+                
+            #If the files were generated than we cn go to the next folder
+            if train and test:
                 print "Folder " + dataset_switch.id + " " + folder.id + " already prepared."
                 continue
             
@@ -78,11 +88,13 @@ class Switch(object):
             
             train_sframe = folder.train_sframe
             
+            '''
             user_count_rating   = train_sframe.groupby(key_columns = 'user_id', operations = {'user_count_rating': agg.COUNT()})
             user_mean_rating    = train_sframe.groupby(key_columns = 'user_id', 
                                                  operations = {'user_mean_rating': agg.MEAN('rating')})
             user_sd_rating      = train_sframe.groupby(key_columns = 'user_id', 
                                                  operations = {'user_sd_rating': agg.STD('rating')})
+            '''
             
             item_count_rating   = train_sframe.groupby(key_columns = 'item_id', operations = {'item_count_rating': agg.COUNT()})
             item_mean_rating    = train_sframe.groupby(key_columns = 'item_id', 
@@ -90,26 +102,37 @@ class Switch(object):
             item_sd_rating      = train_sframe.groupby(key_columns = 'item_id', 
                                                  operations = {'item_sd_rating': agg.STD('rating')})
             
+            #user_attr = [user_count_rating, user_mean_rating, user_sd_rating]
+            item_attr = [item_count_rating, item_mean_rating, item_sd_rating, movie_sframe]
             
-            s1 = train_sframe.join(user_count_rating, on = 'user_id', how = 'left')
-            s2 = s1.join(user_mean_rating, on = 'user_id', how = 'left')
-            s3 = s2.join(user_sd_rating, on = 'user_id', how = 'left')
-            s4 = s3.join(item_count_rating, on = 'item_id', how = 'left')
-            s5 = s4.join(item_mean_rating, on = 'item_id', how = 'left')
-            s6 = s5.join(item_sd_rating, on = 'item_id', how = 'left')
-            s7 = s6.join(movie_sframe, on = 'item_id', how = 'left')
+            if not test:
+                test_sframe = folder.test_sframe
+                test_sframe = self._merge_sframes(test_sframe, user_attr = None, item_attr = item_attr)
+                test_sframe.save(test_file, format = 'csv')
+                print "Test file saved."
+                
+            if not train:
+                train_sframe = self._merge_sframes(train_sframe, user_attr = None, item_attr = item_attr)
+
+                predictions = model_manager.get_predictions_switch(dataset, folder)
+                target      = train_sframe.select_column(key = 'rating')
             
-            #{'rating': 4.0, 'Sci-Fi': None, 'Crime': None, 'Romance': 1, 'item_id': 1393, 'Animation': None, 'Comedy': None, 'War': None, 'user_id': 14623, 'user_sd_rating': 0.8084393211002503, 'Fantasy': None, 'Horror': None, 'Film-Noir': None, 'Musical': None, 'Adventure': None, 'Thriller': None, 'Western': None, 'Mystery': None, 'item_sd_rating': 0.9265691984755607, 'Drama': 1, 'IMAX': None, 'Action': None, '(no genres listed)': None, 'Documentary': None, 'user_mean_rating': 3.3995983935743, 'user_count_rating': 498, 'item_count_rating': 10097, 'item_mean_rating': 3.6352381895612607, 'Children': None}
+                best_models = map(lambda t, *p: self._get_best_class(t, *p), target, *predictions)
+                classes     = SArray(best_models)
             
-            predictions = model_manager.get_predictions_switch(dataset, folder)
-            target      = train_sframe.select_column(key = 'rating')
-            
-            best_models = map(lambda t, *p: self.get_best_class(t, *p), target, *predictions)
-            classes     = SArray(best_models)
-            
-            s7.add_column(data = classes, name = 'class')
-            s7.save(file_save, format = 'csv')
-        
+                train_sframe.add_column(data = classes, name = 'class')
+                train_sframe.save(train_file, format = 'csv')
+                print "Train file saved."
+     
+    def _merge_sframes(self, frame, user_attr, item_attr):
+        if user_attr:
+            for f in user_attr:
+                frame = frame.join(f, on = 'user_id', how = 'left')
+        if item_attr:
+            for f in item_attr:
+                frame = frame.join(f, on = 'item_id', how = 'left')
+        return frame
+    
     def _process_movies(self, filename):
         from graphlab.data_structures.sarray import SArray
         from graphlab.data_structures.sframe import SFrame
@@ -143,7 +166,7 @@ p2 = SArray([3, 4, 2])
 target =  SArray([1, 3, 2])
 
 s = Switch()
-solution = map(lambda t, *p: s.get_best_class(t, *p), target, 
+solution = map(lambda t, *p: s._get_best_class(t, *p), target, 
                                   *[p1, p2])
 print solution
 from graphlab.data_structures.sframe import SFrame
