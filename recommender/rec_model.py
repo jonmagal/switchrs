@@ -6,16 +6,9 @@ Created on 10/09/2014
 @author: Jonathas Magalhães
 '''
 
-import graphlab
 import os
 
-from graphlab.data_structures.sframe    import SFrame
-from graphlab.data_structures.sarray    import SArray
-from graphlab.toolkits.recommender      import item_similarity_recommender, popularity_recommender
-from graphlab.toolkits.recommender      import factorization_recommender
-from graphlab.toolkits.recommender.util import compare_models
-
-from local_settings import REC_MODELS_PATH, REC_PREDICTION_PATH
+from local_settings import REC_MODELS_PATH, REC_PREDICTION_TEST_PATH, REC_PREDICTION_TRAIN_PATH
 from settings       import MODELS_CONF
 
 
@@ -35,10 +28,17 @@ class RecommendationModel(object):
     def _get_model_file(self, dataset, folder):
         return REC_MODELS_PATH + self.id + '_' + dataset.id + '_' + folder.id 
         
-    def _get_prediction_file(self, dataset, folder):
-        return REC_PREDICTION_PATH + self.id + '_' + dataset.id + '_' + folder.id
-    
+    def _get_prediction_file(self, dataset, folder, type_prediction = 'test'):
+        if type_prediction == 'test':
+            return REC_PREDICTION_TEST_PATH + self.id + '_' + dataset.id + '_' + folder.id
+        else:
+            return REC_PREDICTION_TRAIN_PATH + self.id + '_' + dataset.id + '_' + folder.id
+        
     def train_model(self, dataset):
+        from graphlab.toolkits.recommender      import item_similarity_recommender, popularity_recommender
+        from graphlab.toolkits.recommender      import factorization_recommender
+
+
         for folder in dataset.folders:
             model_file = self._get_model_file(dataset, folder) 
             
@@ -65,9 +65,12 @@ class RecommendationModel(object):
                 model.save(location = model_file)
                 print 'RecommendationModel ' + self.id + ' trained and saved.'
                     
-    def test_model(self, dataset):
+    def test_model(self, dataset, type_prediction = 'test'):
+        from graphlab import load_model
+
         for folder in dataset.folders:
-            prediction_file = self._get_prediction_file(dataset, folder) 
+            prediction_file = self._get_prediction_file(dataset, folder, type_prediction) 
+            
             model_file = self._get_model_file(dataset, folder)
 
             if os.path.exists(prediction_file):
@@ -79,22 +82,21 @@ class RecommendationModel(object):
             
             else: 
                 print 'Starting to test_model model ' + self.id + '.'
-                model = graphlab.load_model(location = model_file)
-                predictions = model.predict(dataset = folder.test_sframe)
+                model = load_model(location = model_file)
+                if type_prediction == 'test':
+                    predictions = model.predict(dataset = folder.test_sframe)
+                else:
+                    predictions = model.predict(dataset = folder.train_sframe)
                 predictions.save(filename = prediction_file)
                 print 'RecommendationModel ' + self.id + ' tested.'
     
-    def get_prediction_switch(self, dataset, folder):
-        model_file = self._get_model_file(dataset, folder)
-        model = graphlab.load_model(location = model_file)
-        predictions = model.predict(dataset = folder.train_sframe)
-        return predictions
-    
-    def get_prediction_test(self, dataset, folder):
-        prediction_file = self._get_prediction_file(dataset, folder)
+    def get_prediction(self, dataset, folder, type_prediction = 'test'):
+        from graphlab.data_structures.sarray    import SArray
+
+        prediction_file = self._get_prediction_file(dataset, folder, type_prediction)
         predictions = SArray(prediction_file)
         return predictions
-        
+            
 class ModelManager(object):
     
     models = []
@@ -124,11 +126,18 @@ class ModelManager(object):
     def test_models(self, dataset):
         for model in self.models:
             model.test_model(dataset = dataset)
+            model.test_model(dataset = dataset, type_prediction = 'train')
     
-    def get_predictions_switch(self, dataset, folder):
-        predictions = [ model.get_prediction_switch(dataset, folder) for model in self.models]
+    def get_predictions(self, dataset, folder, type_prediction = 'test'):
+        predictions = [ model.get_prediction(dataset, folder, type_prediction) for model in self.models]
         return predictions
     
-    def get_predictions_test(self, dataset, folder):
-        predictions = [ model.get_prediction_test(dataset, folder) for model in self.models]
-        return predictions
+    def get_index_model(self, switch_predictions):
+        return [self._get_index(model_id) for model_id in switch_predictions]
+    
+    def _get_index(self, model_id):
+        for model in self.models:
+            i = 0
+            if model.id == model_id:
+                return i
+            i += 1 

@@ -17,12 +17,21 @@ class Evaluation():
     dataset_switch  = None
     
     def __init__(self, dataset_id, dataset_switch_id):
+        self._init_dir()
         self.model_manager = ModelManager()
         self.dataset = DataSet(dataset_id = dataset_id, sframe = True)
         
         self.dataset_switch = DataSet(dataset_id = dataset_switch_id, sframe = False)
         self.switch = Switch()
         
+    def _init_dir(self):
+        import os
+        from local_settings import DIR
+
+        for d in DIR:
+            if not os.path.exists(d):
+                os.makedirs(d)
+                
     def _train_rec_models(self):
         self.model_manager.train_models(dataset = self.dataset)
         
@@ -34,8 +43,7 @@ class Evaluation():
                                     model_manager = self.model_manager)
         
     def _train_switch(self):
-        pass
-        #self.switch.train(dataset_switch = self.dataset_switch)
+        self.switch.train(dataset_switch = self.dataset_switch)
     
     def _test_switch(self):
         self.switch.test(dataset = self.dataset, dataset_switch = self.dataset_switch, 
@@ -50,7 +58,6 @@ class Evaluation():
         self._test_rec_models()
         self._create_datasets_switch()
         self._train_switch()
-        
         self._test_switch()
         self._evaluate()
         
