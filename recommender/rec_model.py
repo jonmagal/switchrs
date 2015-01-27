@@ -8,7 +8,7 @@ Created on 10/09/2014
 
 import os
 
-from local_settings import REC_MODELS_PATH, REC_PREDICTION_TEST_PATH, REC_PREDICTION_TRAIN_PATH
+from settings import REC_MODELS_PATH, REC_PREDICTION_TEST_PATH, REC_PREDICTION_TRAIN_PATH
 from settings       import MODELS_CONF
 
 

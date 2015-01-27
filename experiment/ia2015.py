@@ -26,7 +26,7 @@ class Evaluation():
         
     def _init_dir(self):
         import os
-        from local_settings import DIR
+        from settings import DIR
 
         for d in DIR:
             if not os.path.exists(d):

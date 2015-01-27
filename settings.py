@@ -4,7 +4,23 @@ Created on 28/05/2014
 
 @author: Jonathas Magalhães
 '''
-from local_settings import MOVIELENS_PATH, MOVIELENS_SWITCH_PATH
+from local_settings import DATASET_PATH
+
+REC_MODELS_PATH     = DATASET_PATH + 'rec_models/'
+REC_PREDICTION_TEST_PATH    = DATASET_PATH + 'rec_predictions_test/' 
+REC_PREDICTION_TRAIN_PATH   = DATASET_PATH + 'rec_predictions_train/'
+
+MOVIELENS_PATH          = DATASET_PATH + 'MovieLens/ml-10M100K/'
+MOVIELENS_SWITCH_PATH   = DATASET_PATH + 'MovieLens/ml-10M100K-switch/'
+
+SWITCH_MODELS_PATH              = DATASET_PATH + 'switch_models/'
+SWITCH_CLASS_PREDICTION_PATH    = DATASET_PATH + 'switch_class_predictions/'  
+SWITCH_RATING_PREDICTION_PATH   = DATASET_PATH + 'switch_rating_predictions/'
+
+RESULTS_FILE = DATASET_PATH + 'results.csv'
+    
+DIR = [DATASET_PATH, REC_MODELS_PATH, REC_PREDICTION_TEST_PATH, REC_PREDICTION_TRAIN_PATH, MOVIELENS_PATH, 
+       MOVIELENS_SWITCH_PATH, SWITCH_MODELS_PATH, SWITCH_CLASS_PREDICTION_PATH, SWITCH_RATING_PREDICTION_PATH]
 
 DATASET_CONF = {'movielens': {
                   'movies':  MOVIELENS_PATH + 'movies.dat',
