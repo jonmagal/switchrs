@@ -6,7 +6,7 @@ Created on 28/05/2014
 '''
 from local_settings import DATASET_PATH
 
-REC_MODELS_PATH     = DATASET_PATH + 'rec_models/'
+REC_MODELS_PATH             = DATASET_PATH + 'rec_models/'
 REC_PREDICTION_TEST_PATH    = DATASET_PATH + 'rec_predictions_test/' 
 REC_PREDICTION_TRAIN_PATH   = DATASET_PATH + 'rec_predictions_train/'
 
@@ -125,4 +125,11 @@ MODELS_CONF = {'item_based1':
                {'model_type'       : 'matrix_factorization',
                  'options'          : {'solver': 'als'}, 
                  },
+               } 
+
+SWITCH_CONF = {'naive_bayes1': 
+                    {'model_type'       : 'naive_bayes',
+                     'options'          : {}, 
+                     },
+               
                } 

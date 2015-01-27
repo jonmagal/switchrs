@@ -5,67 +5,17 @@ Created on 10/01/2015
 @author: Jonathas Magalhães
 '''
 
-from settings import SWITCH_MODELS_PATH, SWITCH_CLASS_PREDICTION_PATH, SWITCH_RATING_PREDICTION_PATH, RESULTS_FILE,\
-    MOVIELENS_SWITCH_PATH
+from settings import SWITCH_MODELS_PATH, SWITCH_CLASS_PREDICTION_PATH, SWITCH_RATING_PREDICTION_PATH,\
+    MOVIELENS_SWITCH_PATH, SWITCH_CONF
+from rclassifiers import RCLassifier
 
-class NaiveBayes(object):
+class SwitchModel(object):
     
-    def train(self, train_file, test_file, model_file):
-        from rpy2 import robjects
-        import os 
-        
-        if os.path.exists(model_file):
-            print "Model already tested."  
-            return 
-        
-        robjects.r('''
-                    train <- function(train_file, test_file, model_file) {
-                        library(e1071)
-                        train         <- read.csv(train_file)
-                        train$class   <- as.factor(train$class)
-                        naive         <- naiveBayes(train[, 4:26], train[, 27])
-                        saveRDS(naive, model_file)
-                    }
-                    ''')
-        
-        train = robjects.globalenv['train']
-        train(train_file, test_file, model_file)
-    
-    def predict(self, test_file, model_file, prediction_file):
-        from rpy2 import robjects
-        import os
-        
-        if os.path.exists(prediction_file):
-            print "Model already predicted."
-            return 
-        
-        robjects.r('''
-                    pred <- function(test_file, model_file, prediction_file) {
-                        library(e1071)
-                        naive         <- readRDS(model_file)
-                        test          <- read.csv(test_file)
-                        pred          <- predict(naive, test[, 4:26])
-                        write.csv(pred, prediction_file)
-                    }
-                    ''')
-        pred = robjects.globalenv['pred']
-        pred(test_file, model_file, prediction_file)
-        
-class Switch(object):
-    '''
-    classdocs
-    '''
-    
-    id                  = 'naive_bayes1'
-    model_type          = 'naive_bayes'
+    id                  = None
+    model_type          = None
     options             = None
     
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
-    
+            
     def _get_model_file(self, dataset, folder):
         return SWITCH_MODELS_PATH + self.id + '_' + dataset.id + '_' + folder.id + '.rds'
         
@@ -78,54 +28,42 @@ class Switch(object):
     def _get_switch_prediction(self, switch_predictions, *cf_predictions):
         return cf_predictions[switch_predictions]
     
-    def evaluate(self, dataset, dataset_switch, model_manager):
-        import numpy as np
+    def train_switch(self, dataset_switch):
+        import os 
         
-        from graphlab.data_structures.sarray import SArray
-        from graphlab.toolkits.evaluation import rmse
-        from util.util import save_sheet
+        for folder in dataset_switch.folders:
+            model_file      = self._get_model_file(dataset_switch, folder)
+            if os.path.exists(model_file):
+                print "Model already tested."  
+                return 
         
-        values  = []
-        info    = []
-        title = ['folder', ]
-        
-        for model in model_manager.models:
-            title.append(model.id)
-        title.append(self.id)
+            print 'Starting to train switch model ' + self.id + '.'
+            train_file  = folder.train_file
             
-        for folder in dataset.folders:
-            values_row = []
-            info_row    = []
-            
-            info_row.append(folder.id)
-            
-            test_sframe = folder.test_sframe
-            targets     = test_sframe.select_column(key = 'rating')
-            
-            rating_prediction_file  = self._get_rating_prediction_file(dataset_switch, folder)
-            switch_predictions = SArray(rating_prediction_file)
-            
-            for model in model_manager.models:
-                predictions = model.get_prediction(dataset, folder)
-                value = rmse(targets, predictions)
-                values_row.append(value)
-                
-            value = rmse(targets, switch_predictions)
-            values_row.append(value)
-            
-            info.append(info_row)
-            values.append(values_row)
-        
-        v           = np.array(values)
-        sum_values  = v.mean(axis = 0)
-        info.append(['mean'])
-        values.append(sum_values.tolist())
-        
-        content = [x+y for x,y in zip(info, values)]
-        save_sheet(RESULTS_FILE, content, title)
-        
+            if self.model_type == 'naive_bayes':
+                classifier = RCLassifier()
+                classifier.naive_train(self, train_file, model_file)
     
-    def test(self, dataset, dataset_switch, model_manager):
+    def test_switch(self, dataset_switch):
+        import os
+        
+        for folder in dataset_switch.folders:
+            prediction_file = self._get_class_prediction_file(dataset_switch, folder)
+            model_file      = self._get_model_file(dataset_switch, folder)
+            
+            if os.path.exists(prediction_file):
+                print "Model already predicted."
+                return 
+            
+            print 'Starting to test switch model ' + self.id + '.'
+            test_file   = folder.test_file
+            
+            if self.model_type == 'naive_bayes':
+                classifier = RCLassifier()
+                classifier.naive_test(test_file, model_file, prediction_file)
+    
+    
+    def rating_prediction_switch(self, dataset, dataset_switch, model_manager):
         from graphlab.data_structures.sframe import SFrame
         from graphlab.data_structures.sarray import SArray
         import os
@@ -152,21 +90,43 @@ class Switch(object):
             
             rating_array = SArray(rating_predictions)
             rating_array.save(filename = rating_prediction_file)
-    
-    def train(self, dataset_switch):
-        
-        naive = NaiveBayes()
-        for folder in dataset_switch.folders:
-            train_file  = folder.train_file
-            test_file   = folder.test_file
-            
-            prediction_file = self._get_class_prediction_file(dataset_switch, folder)
-            model_file      = self._get_model_file(dataset_switch, folder)
-            
-            naive.train(train_file, test_file, model_file)
-            naive.predict(test_file, model_file, prediction_file)
-    
 
+    def get_prediction(self, dataset, folder, ):
+        from graphlab.data_structures.sarray    import SArray
+
+        prediction_file = self._get_rating_prediction_file(dataset, folder)
+        predictions     = SArray(prediction_file)
+        return predictions
+    
+class SwitchManager(object):
+    '''
+    classdocs
+    '''
+    
+    switches = []
+    
+    def __init__(self):
+        self._set_models()
+        
+    def _set_models(self):
+        for model_id in sorted(SWITCH_CONF.keys()):
+            switch = SwitchModel()
+            switch.id            = model_id
+            model_conf           = SWITCH_CONF[switch.id]
+            switch.model_type    = model_conf['model_type']
+            switch.options       = model_conf['options']
+            self.switches.append(switch)
+    
+    def train_models(self, dataset_switch):
+        for switch in self.switches:
+            switch.train_switch(dataset_switch)
+            switch.test_switch(dataset_switch)
+        
+    def rating_prediction_switches(self, dataset, dataset_switch, model_manager):
+        for switch in self.switches:
+            switch.rating_prediction_switch(dataset, dataset_switch, model_manager)
+            
+    
 """
 from graphlab.data_structures.sarray import SArray
 
@@ -178,7 +138,7 @@ target  = SArray([1, 3, 2])
 
 classes = SArray([0, 1, 2])
 
-s = Switch()
+s = SwitchManager()
 solution = map(lambda t, *p: s._get_best_class(t, *p), target, *[p1, p2])
 print solution
 
@@ -194,6 +154,6 @@ for d in DIR:
 train_file  = MOVIELENS_SWITCH_PATH + 'r1.train.csv'
 test_file   = MOVIELENS_SWITCH_PATH + 'r1.test.csv'
 model_file  = SWITCH_MODELS_PATH + 'test.rds'
-n = NaiveBayes()
+n = SwitchModel()
 n.train(train_file, test_file, model_file)
 """

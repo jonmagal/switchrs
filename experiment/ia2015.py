@@ -7,22 +7,29 @@ Created on 10/01/2015
 '''
 from recommender.dataset    import DataSet
 from recommender.rec_model  import ModelManager
-from switch.switch          import Switch
+from switch.switch          import SwitchManager
+from evaluator.evaluator    import Evaluator
 
-class Evaluation():
+class Experiment():
 
     dataset         = None
-    model_manager   = None
-    switch          = None
     dataset_switch  = None
+    
+    model_manager   = None
+    switch_manager  = None
+    
+    evaluator       = None
     
     def __init__(self, dataset_id, dataset_switch_id):
         self._init_dir()
-        self.model_manager = ModelManager()
-        self.dataset = DataSet(dataset_id = dataset_id, sframe = True)
         
+        self.dataset        = DataSet(dataset_id = dataset_id, sframe = True)
         self.dataset_switch = DataSet(dataset_id = dataset_switch_id, sframe = False)
-        self.switch = Switch()
+        
+        self.model_manager  = ModelManager()
+        self.switch_manager = SwitchManager()
+        
+        self.evaluator = Evaluator()
         
     def _init_dir(self):
         import os
@@ -42,15 +49,15 @@ class Evaluation():
         self.dataset_switch.prepare_dataset(dataset = self.dataset, model_manager = self.model_manager)
         
     def _train_switch(self):
-        self.switch.train(dataset_switch = self.dataset_switch)
-    
+        self.switch_manager.train_models(dataset_switch = self.dataset_switch)
+        
     def _test_switch(self):
-        self.switch.test(dataset = self.dataset, dataset_switch = self.dataset_switch, 
+        self.switch_manager.rating_prediction_switches(dataset = self.dataset, dataset_switch = self.dataset_switch, 
                          model_manager = self.model_manager)
     
     def _evaluate(self):
-        self.switch.evaluate(dataset = self.dataset, dataset_switch = self.dataset_switch, 
-                             model_manager = self.model_manager)
+        self.evaluator.evaluate(dataset = self.dataset, dataset_switch = self.dataset_switch, 
+                                model_manager = self.model_manager, switch_manager = self.switch_manager)
 
     def run(self):
         self._train_rec_models()
@@ -61,5 +68,5 @@ class Evaluation():
         self._evaluate()
         
 if __name__ == '__main__':
-    evaluation = Evaluation(dataset_id = 'movielens', dataset_switch_id = 'movielens_switch')
+    evaluation = Experiment(dataset_id = 'movielens', dataset_switch_id = 'movielens_switch')
     evaluation.run()
