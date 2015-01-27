@@ -4,7 +4,7 @@ Created on 27/01/2015
 
 @author: Jonathas Magalhães
 '''
-from settings import RESULTS_FILE
+from settings import RESULTS_PATH
 
 class Evaluator(object):
     '''
@@ -13,6 +13,7 @@ class Evaluator(object):
     
     def evaluate(self, dataset, dataset_switch, model_manager, switch_manager):
         import numpy as np
+        import os 
         
         from graphlab.toolkits.evaluation import rmse
         from util.util import save_sheet
@@ -21,6 +22,11 @@ class Evaluator(object):
         info    = []
         title   = ['folder', ]
         
+        save_file = RESULTS_PATH + dataset.id + '_' + dataset_switch.id + '.csv'
+        
+        if os.path.exists(save_file):
+            print 'Datasets ' + dataset.id + ' and ' + dataset_switch.id + 'already evaluated.'  
+            return 
         
         for model in model_manager.models:
             title.append(model.id)
@@ -56,4 +62,4 @@ class Evaluator(object):
         values.append(sum_values.tolist())
         
         content = [x+y for x,y in zip(info, values)]
-        save_sheet(RESULTS_FILE, content, title)
+        save_sheet(save_file, content, title)

@@ -33,7 +33,7 @@ class DataSet(object):
                 return f
     
                 
-    def prepare_dataset(self, dataset, model_manager):  
+    def prepare_switch_dataset(self, dataset, model_manager):  
         print "Starting to process movies."
         movie_sframe = self._process_movies(filename = dataset.movies_file)
         print "Movies processed."
@@ -62,7 +62,6 @@ class DataSet(object):
             
             test    = False
             train   = False
-            
             
             if os.path.exists(train_file):
                 print "Train file of the folder " + self.id + " " + folder.id + " already prepared."

@@ -8,7 +8,7 @@ Created on 10/09/2014
 
 import os
 
-from settings import REC_MODELS_PATH, REC_PREDICTION_TEST_PATH, REC_PREDICTION_TRAIN_PATH
+from settings import REC_MODELS_PATH, REC_PREDICTION_TEST_PATH, REC_PREDICTION_TRAIN_PATH, REC_EVALUATION_PATH
 from settings       import MODELS_CONF
 
 
@@ -20,10 +20,6 @@ class RecommendationModel(object):
     id                  = None
     model_type          = None
     options             = None
-    #model_file          = None
-    #prediction_file     = None
-    #evaluation_file     = None
-    #parameter_file      = None
     
     def _get_model_file(self, dataset, folder):
         return REC_MODELS_PATH + self.id + '_' + dataset.id + '_' + folder.id 
@@ -33,7 +29,13 @@ class RecommendationModel(object):
             return REC_PREDICTION_TEST_PATH + self.id + '_' + dataset.id + '_' + folder.id
         else:
             return REC_PREDICTION_TRAIN_PATH + self.id + '_' + dataset.id + '_' + folder.id
-        
+    
+    def _get_evaluation_file(self, dataset, folder, evaluation_type = 'user'):
+        if evaluation_type == 'user':
+            return REC_EVALUATION_PATH + self.id + '_' + dataset.id + '_' + folder.id + '_user'
+        else:
+            return REC_EVALUATION_PATH + self.id + '_' + dataset.id + '_' + folder.id + '_item'
+            
     def train_model(self, dataset):
         from graphlab.toolkits.recommender      import item_similarity_recommender, popularity_recommender
         from graphlab.toolkits.recommender      import factorization_recommender
@@ -44,6 +46,8 @@ class RecommendationModel(object):
             
             if os.path.exists(model_file):
                 print 'Recommendation Model ' + self.id + ' already trained.'
+                return
+            
             else:
                 print 'Starting to train model ' + self.id + '.'
                 
@@ -75,7 +79,8 @@ class RecommendationModel(object):
 
             if os.path.exists(prediction_file):
                 print 'RecommendationModel ' + self.id + ' already tested.'
-        
+                return 
+            
             elif not os.path.exists(model_file):
                 print 'Impossible testing this model. It should be trained first.'
                 return
@@ -90,6 +95,37 @@ class RecommendationModel(object):
                 predictions.save(filename = prediction_file)
                 print 'RecommendationModel ' + self.id + ' tested.'
     
+    def evaluate_model(self, dataset):
+        from graphlab import load_model
+        
+        model = None
+        for folder in dataset.folders:
+            model_file = self._get_model_file(dataset, folder)
+        
+            user_evaluation_file = self._get_evaluation_file(dataset, folder, evaluation_type = 'user')
+            item_evaluation_file = self._get_evaluation_file(dataset, folder, evaluation_type = 'item')
+            
+            user = item = False
+            
+            if os.path.exists(user_evaluation_file):
+                user = True
+                print 'RecommendationModel ' + self.id + ' already evaluated by user.'
+            
+            if os.path.exists(item_evaluation_file):
+                item = True
+                print 'RecommendationModel ' + self.id + ' already evaluated by item.'
+            
+            if user and item:
+                return
+            
+            model       = load_model(location = model_file)
+            evaluation  = model.evaluate(dataset = folder.train_sframe, metric = 'rmse')
+            if not user:
+                evaluation['rmse_by_user'].save(user_evaluation_file)
+            if not item:
+                evaluation['rmse_by_item'].save(item_evaluation_file)
+            
+                
     def get_prediction(self, dataset, folder, type_prediction = 'test'):
         from graphlab.data_structures.sarray    import SArray
 
@@ -113,10 +149,6 @@ class ModelManager(object):
             model.model_type    = model_conf['model_type']
             model.options       = model_conf['options']
             
-            #model_obj.evaluation_file   = EVALUATION_PATH + model_obj.name + '_' + dataset.dataset_key + '_evaluation.dat'
-            #model_obj.model_file        = MODEL_PATH + model_obj.name + '_' + dataset.dataset_key + '.model'
-            #model_obj.prediction_file   = PREDICTION_PATH + model_obj.name + '_' + dataset.dataset_key + '_prediction.dat'
-            #model_obj.parameter_file    = PARAMETER_PATH + model_obj.name + '_' + dataset.dataset_key + '_parameter.dat'
             self.models.append(model)
     
     def train_models(self, dataset):
@@ -128,6 +160,10 @@ class ModelManager(object):
             model.test_model(dataset = dataset)
             model.test_model(dataset = dataset, type_prediction = 'train')
     
+    def evaluate_models(self, dataset):
+        for model in self.models:
+            model.evaluate_model(dataset = dataset)
+            
     def get_predictions(self, dataset, folder, type_prediction = 'test'):
         predictions = [ model.get_prediction(dataset, folder, type_prediction) for model in self.models]
         return predictions

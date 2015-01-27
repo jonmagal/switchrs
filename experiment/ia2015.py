@@ -45,8 +45,11 @@ class Experiment():
     def _test_rec_models(self):
         self.model_manager.test_models(dataset = self.dataset)
     
+    def _evaluate_rec_models(self):
+        self.model_manager.evaluate_models(dataset = self.dataset)
+        
     def _create_datasets_switch(self):   
-        self.dataset_switch.prepare_dataset(dataset = self.dataset, model_manager = self.model_manager)
+        self.dataset_switch.prepare_switch_dataset(dataset = self.dataset, model_manager = self.model_manager)
         
     def _train_switch(self):
         self.switch_manager.train_models(dataset_switch = self.dataset_switch)
@@ -62,6 +65,7 @@ class Experiment():
     def run(self):
         self._train_rec_models()
         self._test_rec_models()
+        self._evaluate_rec_models()
         self._create_datasets_switch()
         self._train_switch()
         self._test_switch()
