@@ -39,8 +39,7 @@ class Evaluation():
         self.model_manager.test_models(dataset = self.dataset)
     
     def _create_datasets_switch(self):   
-        self.switch.prepare_dataset(dataset = self.dataset, dataset_switch = self.dataset_switch, 
-                                    model_manager = self.model_manager)
+        self.dataset_switch.prepare_dataset(dataset = self.dataset, model_manager = self.model_manager)
         
     def _train_switch(self):
         self.switch.train(dataset_switch = self.dataset_switch)
