@@ -21,9 +21,12 @@ class DataSet(object):
     folders = None
     
     def __init__(self, dataset_id, sframe = False):
+        print "Initiating the dataset " + dataset_id + "."
         self.id = dataset_id
         self._load_folders()
+        
         if sframe == True:
+            print "Loading dataframes of the dataset " + dataset_id + "."
             self._load_sframes()
     
     #Public methods
@@ -31,27 +34,32 @@ class DataSet(object):
         for f in self.folders:
             if f.id == folder_id:
                 return f
-    
                 
     def prepare_switch_dataset(self, dataset, model_manager, force):  
         print "Starting to process movies."
         movie_sframe = self._process_movies(filename = dataset.movies_file)
         print "Movies processed."
         
-        self._prepare_movielens(dataset, model_manager, movie_sframe, force)
-    
-    
+        by_item = False
+        by_user = False
+        all     = False
+        
+            
+        if self.id == 'movielens_switch_by_item':
+            by_item = True
+        
+        if self.id == 'movielens_switch_all':
+            all = True
+        
+        self._prepare_movielens(dataset, model_manager, movie_sframe, by_item, by_user, all, force)
+        
     
     ###################################################################################################################
     
     #Private methods     
     
-    def _get_best_class(self, target, *predictions):
-        import numpy as np
-        
-        return np.argmin(np.absolute(np.subtract(predictions, target)))
-        
-    def _prepare_movielens(self, dataset, model_manager, movie_sframe, force):
+    def _prepare_movielens(self, dataset, model_manager, movie_sframe, by_item = False, by_user = False, all = False, 
+                           force = False):
         import os
         import graphlab.aggregate as agg
         
@@ -78,16 +86,17 @@ class DataSet(object):
             
             print "Preparing folder " + self.id + " " + folder.id + "."
             
-            train_sframe = folder.train_sframe
+            train_sframe    = folder.train_sframe
+            user_attr       = None 
             
-            '''
-            user_count_rating   = train_sframe.groupby(key_columns = 'user_id', 
-                                                        operations = {'user_count_rating': agg.COUNT()})
-            user_mean_rating    = train_sframe.groupby(key_columns = 'user_id', 
-                                                 operations = {'user_mean_rating': agg.MEAN('rating')})
-            user_sd_rating      = train_sframe.groupby(key_columns = 'user_id', 
-                                                 operations = {'user_sd_rating': agg.STD('rating')})
-            '''
+            if all:
+                user_count_rating   = train_sframe.groupby(key_columns = 'user_id', 
+                                                            operations = {'user_count_rating': agg.COUNT()})
+                user_mean_rating    = train_sframe.groupby(key_columns = 'user_id', 
+                                                            operations = {'user_mean_rating': agg.MEAN('rating')})
+                user_sd_rating      = train_sframe.groupby(key_columns = 'user_id', 
+                                                            operations = {'user_sd_rating': agg.STD('rating')})
+                user_attr           = [user_count_rating, user_mean_rating, user_sd_rating]
             
             item_count_rating   = train_sframe.groupby(key_columns = 'item_id', 
                                                        operations = {'item_count_rating': agg.COUNT()})
@@ -96,23 +105,54 @@ class DataSet(object):
             item_sd_rating      = train_sframe.groupby(key_columns = 'item_id', 
                                                  operations = {'item_sd_rating': agg.STD('rating')})
             
-            #user_attr = [user_count_rating, user_mean_rating, user_sd_rating]
             item_attr = [item_count_rating, item_mean_rating, item_sd_rating, movie_sframe]
             
             if not test:
-                test_sframe     = folder.test_sframe
-                test_sframe     = self._merge_sframes(test_sframe, user_attr = None, item_attr = item_attr)
-                predictions     = model_manager.get_predictions(dataset, folder, type_prediction = 'test')
-                test_sframe     = self._add_best_classes(test_sframe, predictions, model_manager)
-                test_sframe.save(test_file, format = 'csv')
-                print "Test file saved."
+                if by_item:
+                    test_sframe = item_attr.pop()
+                    test_sframe = self._merge_sframes(test_sframe, user_attr = user_attr, item_attr = item_attr)
+                    evaluations = model_manager.get_evaluations(dataset, folder, evaluation_type = 'item')
+                    test_sframe = self._add_best_classes_rmse(test_sframe, evaluations, model_manager)
+                    test_sframe.save(test_file, format = 'csv')
+                    print "Test file saved."
+                    
+                else:
+                    test_sframe     = folder.test_sframe
+                    test_sframe     = self._merge_sframes(test_sframe, user_attr = user_attr, item_attr = item_attr)
+                    predictions     = model_manager.get_predictions(dataset, folder, type_prediction = 'test')
+                    test_sframe     = self._add_best_classes(test_sframe, predictions, model_manager)
+                    test_sframe.save(test_file, format = 'csv')
+                    print "Test file saved."
                 
             if not train:
-                train_sframe    = self._merge_sframes(train_sframe, user_attr = None, item_attr = item_attr)
-                predictions     = model_manager.get_predictions(dataset, folder, type_prediction = 'train')
-                train_sframe    = self._add_best_classes(train_sframe, predictions, model_manager)
-                train_sframe.save(train_file, format = 'csv')
-                print "Train file saved."
+                if by_item:
+                    pass
+                else:
+                    train_sframe    = self._merge_sframes(train_sframe, user_attr = user_attr, item_attr = item_attr)
+                    predictions     = model_manager.get_predictions(dataset, folder, type_prediction = 'train')
+                    train_sframe    = self._add_best_classes(train_sframe, predictions, model_manager)
+                    train_sframe.save(train_file, format = 'csv')
+                    print "Train file saved."
+    
+        
+    def _get_best_class_rmse(self, *predictions):
+        import numpy as np
+        
+        return np.argmin(predictions)
+    
+    def _add_best_classes_rmse(self, frame, evaluations, model_manager):
+        from graphlab.data_structures.sarray import SArray
+        
+        best_models_index   = map(lambda *p: self._get_best_class_rmse(*p), *evaluations)
+        best_models         = [model_manager.models[x].id for x in best_models_index]
+        classes             = SArray(best_models)
+        frame.add_column(data = classes, name = 'class')
+        return frame
+    
+    def _get_best_class(self, target, *predictions):
+        import numpy as np
+        
+        return np.argmin(np.absolute(np.subtract(predictions, target)))
     
     def _add_best_classes(self, frame, predictions, model_manager):
         from graphlab.data_structures.sarray import SArray
@@ -173,13 +213,13 @@ class DataSet(object):
             folder.test_file    = folder_conf['test']
             self.folders.append(folder)
             
-        if self.id == 'movielens':  
+        if self.id == 'movielens' or self.id == 'movielens_all':  
             self.movies_file = dataset_conf['movies']
             
     def _load_sframes(self):
         from graphlab.data_structures.sframe import SFrame
 
-        if self.id == 'movielens':
+        if self.id == 'movielens' or self.id == 'movielens_all':
             for folder in self.folders:
                 train_sframe = SFrame.read_csv(url = folder.train_file, delimiter = '::', header = False, 
                                           column_type_hints=[int, str, int, str, float, str, int])

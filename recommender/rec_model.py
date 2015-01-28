@@ -12,7 +12,6 @@ from settings import REC_MODELS_PATH, REC_PREDICTION_TEST_PATH, REC_PREDICTION_T
 from settings       import MODELS_CONF
 
 
-
 class RecommendationModel(object):
     '''
     classdocs
@@ -133,7 +132,14 @@ class RecommendationModel(object):
         prediction_file = self._get_prediction_file(dataset, folder, type_prediction)
         predictions = SArray(prediction_file)
         return predictions
-            
+    
+    def get_evaluation(self, dataset, folder, evaluation_type = 'item'):
+        from graphlab.data_structures.sframe import SFrame
+        
+        evaluation_file = self._get_evaluation_file(dataset, folder, evaluation_type)
+        evaluation_sframe = SFrame(evaluation_file)
+        return evaluation_sframe.select_column(key = 'rmse')
+        
 class ModelManager(object):
     
     models = []
@@ -168,6 +174,10 @@ class ModelManager(object):
     def get_predictions(self, dataset, folder, type_prediction = 'test'):
         predictions = [ model.get_prediction(dataset, folder, type_prediction) for model in self.models]
         return predictions
+    
+    def get_evaluations(self, dataset, folder, evaluation_type = 'item'):
+        evaluations = [ model.get_prediction(dataset, folder, evaluation_type) for model in self.models]
+        return evaluations
     
     def get_index_model(self, switch_predictions):
         return [self._get_index(model_id) for model_id in switch_predictions]

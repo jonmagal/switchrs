@@ -14,7 +14,6 @@ class SwitchModel(object):
     id                  = None
     model_type          = None
     options             = None
-    
             
     def _get_model_file(self, dataset, folder):
         return SWITCH_MODELS_PATH + self.id + '_' + dataset.id + '_' + folder.id + '.rds'
@@ -42,7 +41,7 @@ class SwitchModel(object):
             
             if self.model_type == 'naive_bayes':
                 classifier = RCLassifier()
-                classifier.naive_train(self, train_file, model_file)
+                classifier.naive_train(train_file, model_file)
     
     def test_switch(self, dataset_switch, force):
         import os
