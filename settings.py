@@ -81,6 +81,8 @@ DATASET_CONF = {'movielens': {
                         },
                        ]
                   }
+                
+                
                 }
 
 MODELS_CONF = {'item_based1': 
@@ -120,13 +122,24 @@ MODELS_CONF = {'item_based1':
                
                'matrix_factorization1':
                {'model_type'       : 'matrix_factorization',
-                 'options'          : {'solver': 'sgd'}, 
+                 'options'          : {'solver': 'sgd', 'max_iterations': 50}, 
                  },
                
                'matrix_factorization2':
                {'model_type'       : 'matrix_factorization',
-                 'options'          : {'solver': 'als'}, 
+                 'options'          : {'solver': 'als', 'max_iterations': 50}, 
                  },
+               
+               'matrix_factorization3':
+               {'model_type'       : 'matrix_factorization',
+                 'options'          : {'solver': 'als', 'max_iterations': 100}, 
+                 },
+               
+               'matrix_factorization4':
+               {'model_type'       : 'matrix_factorization',
+                 'options'          : {'solver': 'als', 'max_iterations': 100}, 
+                 },
+               
                } 
 
 SWITCH_CONF = {'naive_bayes1': 

@@ -28,12 +28,12 @@ class SwitchModel(object):
     def _get_switch_prediction(self, switch_predictions, *cf_predictions):
         return cf_predictions[switch_predictions]
     
-    def train_switch(self, dataset_switch):
+    def train_switch(self, dataset_switch, force):
         import os 
         
         for folder in dataset_switch.folders:
             model_file      = self._get_model_file(dataset_switch, folder)
-            if os.path.exists(model_file):
+            if os.path.exists(model_file) and not force:
                 print "Model already tested."  
                 return 
         
@@ -44,14 +44,14 @@ class SwitchModel(object):
                 classifier = RCLassifier()
                 classifier.naive_train(self, train_file, model_file)
     
-    def test_switch(self, dataset_switch):
+    def test_switch(self, dataset_switch, force):
         import os
         
         for folder in dataset_switch.folders:
             prediction_file = self._get_class_prediction_file(dataset_switch, folder)
             model_file      = self._get_model_file(dataset_switch, folder)
             
-            if os.path.exists(prediction_file):
+            if os.path.exists(prediction_file) and not force:
                 print "Model already predicted."
                 return 
             
@@ -63,7 +63,7 @@ class SwitchModel(object):
                 classifier.naive_test(test_file, model_file, prediction_file)
     
     
-    def rating_prediction_switch(self, dataset, dataset_switch, model_manager):
+    def rating_prediction_switch(self, dataset, dataset_switch, model_manager, force):
         from graphlab.data_structures.sframe import SFrame
         from graphlab.data_structures.sarray import SArray
         import os
@@ -72,7 +72,7 @@ class SwitchModel(object):
             rating_prediction_file  = self._get_rating_prediction_file(dataset_switch, folder)
             class_prediction_file   = self._get_class_prediction_file(dataset_switch, folder)
             
-            if os.path.exists(rating_prediction_file):
+            if os.path.exists(rating_prediction_file) and not force:
                 print "Model " + self.id + " in " + dataset_switch.id + " " + folder.id + " already tested."
                 continue 
             
@@ -117,14 +117,14 @@ class SwitchManager(object):
             switch.options       = model_conf['options']
             self.switches.append(switch)
     
-    def train_models(self, dataset_switch):
+    def train_models(self, dataset_switch, force):
         for switch in self.switches:
-            switch.train_switch(dataset_switch)
-            switch.test_switch(dataset_switch)
+            switch.train_switch(dataset_switch, force)
+            switch.test_switch(dataset_switch, force)
         
-    def rating_prediction_switches(self, dataset, dataset_switch, model_manager):
+    def rating_prediction_switches(self, dataset, dataset_switch, model_manager, force):
         for switch in self.switches:
-            switch.rating_prediction_switch(dataset, dataset_switch, model_manager)
+            switch.rating_prediction_switch(dataset, dataset_switch, model_manager, force)
             
     
 """

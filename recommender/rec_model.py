@@ -62,9 +62,10 @@ class RecommendationModel(object):
                     model = popularity_recommender.create(observation_data = folder.train_sframe, target = 'rating')
                     
                 elif self.model_type == 'matrix_factorization':
-                    solver = self.options['solver']
+                    solver          = self.options['solver']
+                    max_interations = self.options['max_iterations']
                     model = factorization_recommender.create(observation_data = folder.train_sframe, solver = solver,
-                                                             target = 'rating')
+                                                             target = 'rating', max_iterations = max_interations)
                 
                 model.save(location = model_file)
                 print 'RecommendationModel ' + self.id + ' trained and saved.'

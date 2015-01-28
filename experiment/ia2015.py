@@ -19,8 +19,9 @@ class Experiment():
     switch_manager  = None
     
     evaluator       = None
+    force           = None
     
-    def __init__(self, dataset_id, dataset_switch_id):
+    def __init__(self, dataset_id, dataset_switch_id, force):
         self._init_dir()
         
         self.dataset        = DataSet(dataset_id = dataset_id, sframe = True)
@@ -28,8 +29,9 @@ class Experiment():
         
         self.model_manager  = ModelManager()
         self.switch_manager = SwitchManager()
+        self.evaluator      = Evaluator()
         
-        self.evaluator = Evaluator()
+        self.force          = force
         
     def _init_dir(self):
         import os
@@ -49,18 +51,20 @@ class Experiment():
         self.model_manager.evaluate_models(dataset = self.dataset)
         
     def _create_datasets_switch(self):   
-        self.dataset_switch.prepare_switch_dataset(dataset = self.dataset, model_manager = self.model_manager)
+        self.dataset_switch.prepare_switch_dataset(dataset = self.dataset, model_manager = self.model_manager, 
+                                                   force = self.force)
         
     def _train_switch(self):
-        self.switch_manager.train_models(dataset_switch = self.dataset_switch)
+        self.switch_manager.train_models(dataset_switch = self.dataset_switch, force = self.force)
         
     def _test_switch(self):
         self.switch_manager.rating_prediction_switches(dataset = self.dataset, dataset_switch = self.dataset_switch, 
-                         model_manager = self.model_manager)
+                         model_manager = self.model_manager, force = self.force)
     
     def _evaluate(self):
         self.evaluator.evaluate(dataset = self.dataset, dataset_switch = self.dataset_switch, 
-                                model_manager = self.model_manager, switch_manager = self.switch_manager)
+                                model_manager = self.model_manager, switch_manager = self.switch_manager, 
+                                force = self.force)
 
     def run(self):
         self._train_rec_models()
@@ -72,5 +76,5 @@ class Experiment():
         self._evaluate()
         
 if __name__ == '__main__':
-    evaluation = Experiment(dataset_id = 'movielens', dataset_switch_id = 'movielens_switch')
+    evaluation = Experiment(dataset_id = 'movielens', dataset_switch_id = 'movielens_switch', force = False)
     evaluation.run()

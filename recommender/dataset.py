@@ -33,12 +33,12 @@ class DataSet(object):
                 return f
     
                 
-    def prepare_switch_dataset(self, dataset, model_manager):  
+    def prepare_switch_dataset(self, dataset, model_manager, force):  
         print "Starting to process movies."
         movie_sframe = self._process_movies(filename = dataset.movies_file)
         print "Movies processed."
         
-        self._prepare_movielens(dataset, model_manager, movie_sframe)
+        self._prepare_movielens(dataset, model_manager, movie_sframe, force)
     
     
     
@@ -51,7 +51,7 @@ class DataSet(object):
         
         return np.argmin(np.absolute(np.subtract(predictions, target)))
         
-    def _prepare_movielens(self, dataset, model_manager, movie_sframe):
+    def _prepare_movielens(self, dataset, model_manager, movie_sframe, force):
         import os
         import graphlab.aggregate as agg
         
@@ -63,11 +63,11 @@ class DataSet(object):
             test    = False
             train   = False
             
-            if os.path.exists(train_file):
+            if os.path.exists(train_file) and not force:
                 print "Train file of the folder " + self.id + " " + folder.id + " already prepared."
                 train = True
             
-            if os.path.exists(test_file):
+            if os.path.exists(test_file) and not force:
                 print "Test file of the folder " + self.id + " " + folder.id + " already prepared."
                 test = True
                 

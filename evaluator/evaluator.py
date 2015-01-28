@@ -11,7 +11,7 @@ class Evaluator(object):
     classdocs
     '''
     
-    def evaluate(self, dataset, dataset_switch, model_manager, switch_manager):
+    def evaluate(self, dataset, dataset_switch, model_manager, switch_manager, force):
         import numpy as np
         import os 
         
@@ -24,7 +24,7 @@ class Evaluator(object):
         
         save_file = RESULTS_PATH + dataset.id + '_' + dataset_switch.id + '.csv'
         
-        if os.path.exists(save_file):
+        if os.path.exists(save_file) and not force:
             print 'Datasets ' + dataset.id + ' and ' + dataset_switch.id + 'already evaluated.'  
             return 
         
