@@ -34,8 +34,8 @@ class SwitchModel(object):
         for folder in dataset_switch.folders:
             model_file      = self._get_model_file(dataset_switch, folder)
             if os.path.exists(model_file) and not force:
-                print "Model already tested."  
-                return 
+                print 'Model already tested in folder ' + folder.id + '.'
+                continue 
         
             print 'Starting to train switch model ' + self.id + '.'
             train_file  = folder.train_file
@@ -52,8 +52,8 @@ class SwitchModel(object):
             model_file      = self._get_model_file(dataset_switch, folder)
             
             if os.path.exists(prediction_file) and not force:
-                print "Model already predicted."
-                return 
+                print 'Model already predicted in folder ' + folder.id + '.'
+                continue 
             
             print 'Starting to test switch model ' + self.id + '.'
             test_file   = folder.test_file

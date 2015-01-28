@@ -45,8 +45,8 @@ class RecommendationModel(object):
             model_file = self._get_model_file(dataset, folder) 
             
             if os.path.exists(model_file):
-                print 'Recommendation Model ' + self.id + ' already trained.'
-                return
+                print 'Recommendation Model ' + self.id + ' already trained in folder ' + folder.id + '.'
+                continue
             
             else:
                 print 'Starting to train model ' + self.id + '.'
@@ -79,8 +79,8 @@ class RecommendationModel(object):
             model_file = self._get_model_file(dataset, folder)
 
             if os.path.exists(prediction_file):
-                print 'RecommendationModel ' + self.id + ' already tested.'
-                return 
+                print 'RecommendationModel ' + self.id + ' already tested in folder ' + folder.id + '.'
+                continue 
             
             elif not os.path.exists(model_file):
                 print 'Impossible testing this model. It should be trained first.'
@@ -110,14 +110,14 @@ class RecommendationModel(object):
             
             if os.path.exists(user_evaluation_file):
                 user = True
-                print 'RecommendationModel ' + self.id + ' already evaluated by user.'
+                print 'RecommendationModel ' + self.id + ' already evaluated by user in folder ' + folder.id + '.'
             
             if os.path.exists(item_evaluation_file):
                 item = True
-                print 'RecommendationModel ' + self.id + ' already evaluated by item.'
+                print 'RecommendationModel ' + self.id + ' already evaluated by item in folder ' + folder.id + '.'
             
             if user and item:
-                return
+                continue
             
             model       = load_model(location = model_file)
             evaluation  = model.evaluate(dataset = folder.train_sframe, metric = 'rmse')
