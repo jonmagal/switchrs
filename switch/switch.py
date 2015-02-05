@@ -30,7 +30,7 @@ class SwitchModel(object):
     def _get_best_prediction(self, target, *predictions):
         import numpy as np
         
-        return np.min(np.absolute(np.subtract(predictions, target)))
+        return predictions[np.argmin(np.absolute(np.subtract(predictions, target)))]
     
     def train_switch(self, dataset_switch, force):
         import os 
