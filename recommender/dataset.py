@@ -40,26 +40,28 @@ class DataSet(object):
         movie_sframe = self._process_movies(filename = dataset.movies_file)
         print "Movies processed."
         
-        by_item = False
-        by_user = False
-        all     = False
+        all_data    = False
+        by_item     = False
+        by_user     = False
         
-            
+        if self.id == 'best':
+            return 
+        
         if self.id == 'movielens_switch_by_item':
             by_item = True
         
         if self.id == 'movielens_switch_all':
-            all = True
+            all_data = True
         
-        self._prepare_movielens(dataset, model_manager, movie_sframe, by_item, by_user, all, force)
+        self._prepare_movielens(dataset, model_manager, movie_sframe, by_item, by_user, all_data, force)
         
     
     ###################################################################################################################
     
     #Private methods     
     
-    def _prepare_movielens(self, dataset, model_manager, movie_sframe, by_item = False, by_user = False, all = False, 
-                           force = False):
+    def _prepare_movielens(self, dataset, model_manager, movie_sframe, by_item = False, by_user = False, 
+                           all_data = False, force = False):
         import os
         import graphlab.aggregate as agg
         
@@ -89,7 +91,7 @@ class DataSet(object):
             train_sframe    = folder.train_sframe
             user_attr       = None 
             
-            if all:
+            if all_data:
                 user_count_rating   = train_sframe.groupby(key_columns = 'user_id', 
                                                             operations = {'user_count_rating': agg.COUNT()})
                 user_mean_rating    = train_sframe.groupby(key_columns = 'user_id', 

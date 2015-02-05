@@ -183,8 +183,8 @@ class ModelManager(object):
         return [self._get_index(model_id) for model_id in switch_predictions]
     
     def _get_index(self, model_id):
+        i = 0
         for model in self.models:
-            i = 0
             if model.id == model_id:
                 return i
             i += 1 

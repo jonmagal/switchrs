@@ -27,13 +27,21 @@ class SwitchModel(object):
     def _get_switch_prediction(self, switch_predictions, *cf_predictions):
         return cf_predictions[switch_predictions]
     
+    def _get_best_prediction(self, target, *predictions):
+        import numpy as np
+        
+        return np.min(np.absolute(np.subtract(predictions, target)))
+    
     def train_switch(self, dataset_switch, force):
         import os 
+        
+        if self.id == 'best':
+            return 
         
         for folder in dataset_switch.folders:
             model_file      = self._get_model_file(dataset_switch, folder)
             if os.path.exists(model_file) and not force:
-                print 'Model already tested in folder ' + folder.id + '.'
+                print 'Model ' + self.id + ' already tested in folder ' + folder.id + '.'
                 continue 
         
             print 'Starting to train switch model ' + self.id + '.'
@@ -46,12 +54,15 @@ class SwitchModel(object):
     def test_switch(self, dataset_switch, force):
         import os
         
+        if self.id == 'best':
+            return 
+        
         for folder in dataset_switch.folders:
             prediction_file = self._get_class_prediction_file(dataset_switch, folder)
             model_file      = self._get_model_file(dataset_switch, folder)
             
             if os.path.exists(prediction_file) and not force:
-                print 'Model already predicted in folder ' + folder.id + '.'
+                print 'Model ' + self.id + ' already predicted in folder ' + folder.id + '.'
                 continue 
             
             print 'Starting to test switch model ' + self.id + '.'
@@ -77,18 +88,27 @@ class SwitchModel(object):
             
             cf_predictions      = model_manager.get_predictions(dataset, folder)
             
-            
-            sf                  = SFrame.read_csv(class_prediction_file, header = True, quote_char = '"', 
-                                                  column_type_hints=[int, str])
-            switch_predictions  = sf.select_column(key = 'x') 
-            
-            index_switch_predictions = model_manager.get_index_model(switch_predictions)
-            
-            rating_predictions  = map(lambda t, *p: self._get_switch_prediction(t, *p), 
-                                      index_switch_predictions, *cf_predictions)
-            
-            rating_array = SArray(rating_predictions)
-            rating_array.save(filename = rating_prediction_file)
+            if self.id == 'best':
+                test_sframe = folder.test_sframe
+                target      = test_sframe.select_column(key = 'rating')
+                
+                rating_predictions  = map(lambda t, *p: self._get_best_prediction(t, *p), target, *cf_predictions)
+                rating_array        = SArray(rating_predictions)
+                rating_array.save(filename = rating_prediction_file)
+                
+            else:
+                
+                sf                  = SFrame.read_csv(class_prediction_file, header = True, quote_char = '"', 
+                                                      column_type_hints = [int, str])
+                switch_predictions  = sf.select_column(key = 'x') 
+                
+                index_switch_predictions = model_manager.get_index_model(switch_predictions)
+                
+                rating_predictions  = map(lambda t, *p: self._get_switch_prediction(t, *p), 
+                                          index_switch_predictions, *cf_predictions)
+                
+                rating_array = SArray(rating_predictions)
+                rating_array.save(filename = rating_prediction_file)
 
     def get_prediction(self, dataset, folder, ):
         from graphlab.data_structures.sarray    import SArray

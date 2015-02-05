@@ -18,7 +18,7 @@ class RCLassifier(object):
                         library(e1071)
                         train         <- read.csv(train_file)
                         train$class   <- as.factor(train$class)
-                        naive         <- naiveBayes(train[, 4:26], train[, 27])
+                        naive         <- naiveBayes(train[, 4:ncol(train)-1], train[, ncol(train)])
                         saveRDS(naive, model_file)
                     }
                     ''')
@@ -34,7 +34,7 @@ class RCLassifier(object):
                         library(e1071)
                         naive         <- readRDS(model_file)
                         test          <- read.csv(test_file)
-                        pred          <- predict(naive, test[, 4:26])
+                        pred          <- predict(naive, test[, 4:ncol(test)-1])
                         write.csv(pred, prediction_file)
                     }
                     ''')

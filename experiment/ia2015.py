@@ -59,12 +59,12 @@ class Experiment():
         
     def _test_switch(self):
         self.switch_manager.rating_prediction_switches(dataset = self.dataset, dataset_switch = self.dataset_switch, 
-                         model_manager = self.model_manager, force = self.force)
+                         model_manager = self.model_manager, force = False)
     
     def _evaluate(self):
         self.evaluator.evaluate(dataset = self.dataset, dataset_switch = self.dataset_switch, 
                                 model_manager = self.model_manager, switch_manager = self.switch_manager, 
-                                force = self.force)
+                                force = True)
 
     def run(self):
         self._train_rec_models()
@@ -76,5 +76,6 @@ class Experiment():
         self._evaluate()
         
 if __name__ == '__main__':
-    evaluation = Experiment(dataset_id = 'movielens_all', dataset_switch_id = 'movielens_switch_all', force = False)
+    evaluation = Experiment(dataset_id = 'movielens', dataset_switch_id = 'movielens_switch', force = False)
     evaluation.run()
+    

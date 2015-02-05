@@ -204,5 +204,8 @@ SWITCH_CONF = {'naive_bayes1':
                     {'model_type'       : 'naive_bayes',
                      'options'          : {}, 
                      },
-               
+               'best': 
+                    {'model_type'       : 'best',
+                     'options'          : {}, 
+                     },
                } 
