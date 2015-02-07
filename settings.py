@@ -84,6 +84,35 @@ DATASET_CONF = {'movielens': {
                        ]
                   },
                 
+                'movielens_all': {
+                  'movies':  MOVIELENS_PATH + 'movies.dat',
+                  'folders': [ 
+                       {'id'    : 'ra', 
+                        'train' : MOVIELENS_PATH + 'ra.train',
+                        'test'  : MOVIELENS_PATH + 'ra.test',
+                        },
+    
+                        {'id'   : 'rb', 
+                        'train' : MOVIELENS_PATH + 'rb.train',
+                        'test'  : MOVIELENS_PATH + 'rb.test',
+                        },
+                    ]
+                  },
+                
+                'movielens_switch_all': {
+                  'folders'  : [ 
+                       {'id'    : 'ra', 
+                        'train' : MOVIELENS_SWITCH_PATH + 'ra.train.csv',
+                        'test'  : MOVIELENS_SWITCH_PATH + 'ra.test.csv',
+                        },
+    
+                        {'id'   : 'rb', 
+                        'train' : MOVIELENS_SWITCH_PATH + 'rb.train.csv',
+                        'test'  : MOVIELENS_SWITCH_PATH + 'rb.test.csv',
+                        },
+                    ]  
+                },
+                
                 'movielens_switch_by_item': {
                   'folders'  : [ 
                        {'id'    : 'r1', 
@@ -112,35 +141,6 @@ DATASET_CONF = {'movielens': {
                         },
                        ]
                   },
-                
-                'movielens_all': {
-                  'movies':  MOVIELENS_PATH + 'movies.dat',
-                  'folders': [ 
-                       {'id'    : 'ra', 
-                        'train' : MOVIELENS_PATH + 'ra.train',
-                        'test'  : MOVIELENS_PATH + 'ra.test',
-                        },
-    
-                        {'id'   : 'rb', 
-                        'train' : MOVIELENS_PATH + 'rb.train',
-                        'test'  : MOVIELENS_PATH + 'rb.test',
-                        },
-                    ]
-                  },
-                
-                'movielens_switch_all': {
-                  'folders'  : [ 
-                       {'id'    : 'ra', 
-                        'train' : MOVIELENS_SWITCH_PATH + 'ra.train.csv',
-                        'test'  : MOVIELENS_SWITCH_PATH + 'ra.test.csv',
-                        },
-    
-                        {'id'   : 'rb', 
-                        'train' : MOVIELENS_SWITCH_PATH + 'rb.train.csv',
-                        'test'  : MOVIELENS_SWITCH_PATH + 'rb.test.csv',
-                        },
-                    ]  
-                }
             }
 
 MODELS_CONF = {'item_based1': 

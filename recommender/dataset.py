@@ -43,6 +43,7 @@ class DataSet(object):
         all_data    = False
         by_item     = False
         by_user     = False
+        sim_data    = False
         
         if self.id == 'best':
             return 
@@ -53,7 +54,14 @@ class DataSet(object):
         if self.id == 'movielens_switch_all':
             all_data = True
         
-        self._prepare_movielens(dataset, model_manager, movie_sframe, by_item, by_user, all_data, force)
+        if self.id == 'movielens_switch_all_sim':
+            all_data = True
+            sim_data = True
+        
+        if self.id == 'movielens_switch_sim':
+            sim_data = True
+                
+        self._prepare_movielens(dataset, model_manager, movie_sframe, by_item, by_user, all_data, sim_data, force)
         
     
     ###################################################################################################################
@@ -61,7 +69,7 @@ class DataSet(object):
     #Private methods     
     
     def _prepare_movielens(self, dataset, model_manager, movie_sframe, by_item = False, by_user = False, 
-                           all_data = False, force = False):
+                           all_data = False, sim_data = False, force = False):
         import os
         import graphlab.aggregate as agg
         
@@ -106,8 +114,13 @@ class DataSet(object):
                                                  operations = {'item_mean_rating': agg.MEAN('rating')})
             item_sd_rating      = train_sframe.groupby(key_columns = 'item_id', 
                                                  operations = {'item_sd_rating': agg.STD('rating')})
-            
             item_attr = [item_count_rating, item_mean_rating, item_sd_rating, movie_sframe]
+            
+            if sim_data:
+                similar_items_cosine    = model_manager.get_similar_items(similarity_type = 'cosine', dataset = dataset, 
+                                                                          folder = folder)
+                similar_items_pearson   = model_manager.get_similar_items(similarity_type = 'pearson', 
+                                                                          dataset = dataset, folder = folder)
             
             if not test:
                 if by_item:

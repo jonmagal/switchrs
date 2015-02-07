@@ -74,8 +74,5 @@ class Experiment():
         self._train_switch()
         self._test_switch()
         self._evaluate()
-        
-if __name__ == '__main__':
-    evaluation = Experiment(dataset_id = 'movielens', dataset_switch_id = 'movielens_switch', force = False)
-    evaluation.run()
+    
     

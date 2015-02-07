@@ -139,7 +139,15 @@ class RecommendationModel(object):
         evaluation_file = self._get_evaluation_file(dataset, folder, evaluation_type)
         evaluation_sframe = SFrame(evaluation_file)
         return evaluation_sframe.select_column(key = 'rmse')
+    
+    def get_similar_items(self, dataset, folder, k):
+        from graphlab import load_model
         
+        model_file  = self._get_model_file(dataset, folder)
+        model       = load_model(location = model_file)
+        return model.get_similar_items(k = k)
+        
+         
 class ModelManager(object):
     
     models = []
@@ -157,6 +165,18 @@ class ModelManager(object):
             model.options       = model_conf['options']
             
             self.models.append(model)
+    
+    def _get_model(self, model_id):
+        for model in self.models:
+            if model.id == model_id:
+                return model
+            
+    def _get_index(self, model_id):
+        i = 0
+        for model in self.models:
+            if model.id == model_id:
+                return i
+            i += 1 
     
     def train_models(self, dataset):
         for model in self.models:
@@ -182,9 +202,9 @@ class ModelManager(object):
     def get_index_model(self, switch_predictions):
         return [self._get_index(model_id) for model_id in switch_predictions]
     
-    def _get_index(self, model_id):
-        i = 0
-        for model in self.models:
-            if model.id == model_id:
-                return i
-            i += 1 
+    def get_similar_items(self, similarity_type, dataset, folder):
+        model_id = 'item_based4'
+        if similarity_type == 'cosine':
+            model_id = 'item_based1'
+        rec_model = self._get_model(model_id)
+        return rec_model.get_similar_items(dataset, folder, k = 50)

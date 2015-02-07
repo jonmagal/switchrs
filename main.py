@@ -4,13 +4,33 @@ Created on 28/05/2014
 
 @author: Jonathas Magalhães
 '''
-from util.util import read_the_dataset, get_movie_vector
-from settings import DATASET_PATH
 
+import sys, getopt
+from experiment.ia2015 import Experiment
+
+def main(argv):
+
+    dataset     = 'movielens'
+    switch      = 'movielens_switch'
+    force       = False
+    
+    try:
+        opts, args = getopt.getopt(argv,"d:s:f:",["dataset=","switch=", "force=", ])
+    except getopt.GetoptError:
+        print 'test.py -d <dataset> -s <switch> -f <force>'
+        sys.exit(2)
+    
+    for opt, arg in opts:
+        if opt in ("-d", "--dataset"):
+            dataset = arg
+        elif opt in ("-s", "--switch"):
+            switch = arg
+        elif opt in ("-f", "--force"):
+            force = True
+            
+    return dataset, switch, force
+            
 if __name__ == '__main__':
-    movies = get_movie_vector(the_movie_file = DATASET_PATH + 'movies.dat')
-    for x in range(1,2):
-        matrix = read_the_dataset(the_dataset_file = DATASET_PATH + 'r' + str(x) + '.train', movies = movies)
-    line = matrix[71566,:]
-    for x in line:
-        print x
+    dataset, switch, force = main(sys.argv[1:])
+    evaluation = Experiment(dataset_id = dataset, dataset_switch_id = switch, force = force)
+    evaluation.run()
