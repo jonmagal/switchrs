@@ -14,7 +14,8 @@ REC_EVALUATION_PATH         = DATASET_PATH + 'rec_evaluations/'
 MOVIELENS_PATH          = DATASET_PATH + 'MovieLens/ml-10M100K/'
 MOVIELENS_SWITCH_PATH   = DATASET_PATH + 'MovieLens/ml-10M100K-switch/'
 
-MOVIELENS_SWITCH_ITEM_PATH   = DATASET_PATH + 'MovieLens/switch_item/'
+MOVIELENS_SWITCH_SIM_PATH   = DATASET_PATH + 'MovieLens/switch-sim/'
+MOVIELENS_SWITCH_ITEM_PATH  = DATASET_PATH + 'MovieLens/switch_item/'
 
 SWITCH_MODELS_PATH              = DATASET_PATH + 'switch_models/'
 SWITCH_CLASS_PREDICTION_PATH    = DATASET_PATH + 'switch_class_predictions/'  
@@ -23,8 +24,8 @@ SWITCH_RATING_PREDICTION_PATH   = DATASET_PATH + 'switch_rating_predictions/'
 RESULTS_PATH = DATASET_PATH + 'results/'
     
 DIR = [DATASET_PATH, REC_MODELS_PATH, REC_PREDICTION_TEST_PATH, REC_PREDICTION_TRAIN_PATH, MOVIELENS_PATH, 
-       MOVIELENS_SWITCH_PATH, SWITCH_MODELS_PATH, SWITCH_CLASS_PREDICTION_PATH, SWITCH_RATING_PREDICTION_PATH, 
-       RESULTS_PATH]
+       MOVIELENS_SWITCH_PATH, MOVIELENS_SWITCH_SIM_PATH, SWITCH_MODELS_PATH, SWITCH_CLASS_PREDICTION_PATH, 
+       SWITCH_RATING_PREDICTION_PATH, RESULTS_PATH]
 
 DATASET_CONF = {'movielens': {
                   'movies':  MOVIELENS_PATH + 'movies.dat',
@@ -55,6 +56,7 @@ DATASET_CONF = {'movielens': {
                         },
                        ]
                   },
+                
                 'movielens_switch': {
                   'folders'  : [ 
                        {'id'    : 'r1', 
@@ -84,6 +86,35 @@ DATASET_CONF = {'movielens': {
                        ]
                   },
                 
+                'movielens_switch_sim': {
+                  'folders'  : [ 
+                       {'id'    : 'r1', 
+                        'train' : MOVIELENS_SWITCH_SIM_PATH + 'r1.train.csv',
+                        'test'  : MOVIELENS_SWITCH_SIM_PATH + 'r1.test.csv',
+                        },
+    
+                        {'id'   : 'r2', 
+                        'train' : MOVIELENS_SWITCH_SIM_PATH + 'r2.train.csv',
+                        'test'  : MOVIELENS_SWITCH_SIM_PATH + 'r2.test.csv',
+                        },
+                       
+                        {'id'   : 'r3', 
+                        'train' : MOVIELENS_SWITCH_SIM_PATH + 'r3.train.csv',
+                        'test'  : MOVIELENS_SWITCH_SIM_PATH + 'r3.test.csv',
+                        },
+                       
+                        {'id'   : 'r4', 
+                        'train' : MOVIELENS_SWITCH_SIM_PATH + 'r4.train.csv',
+                        'test'  : MOVIELENS_SWITCH_SIM_PATH + 'r4.test.csv',
+                        },
+                       
+                        {'id'   : 'r5', 
+                        'train' : MOVIELENS_SWITCH_SIM_PATH + 'r5.train.csv',
+                        'test'  : MOVIELENS_SWITCH_SIM_PATH + 'r5.test.csv',
+                        },
+                       ]
+                  },
+                
                 'movielens_all': {
                   'movies':  MOVIELENS_PATH + 'movies.dat',
                   'folders': [ 
@@ -109,6 +140,20 @@ DATASET_CONF = {'movielens': {
                         {'id'   : 'rb', 
                         'train' : MOVIELENS_SWITCH_PATH + 'rb.train.csv',
                         'test'  : MOVIELENS_SWITCH_PATH + 'rb.test.csv',
+                        },
+                    ]  
+                },
+                
+                'movielens_switch_all_sim': {
+                  'folders'  : [ 
+                       {'id'    : 'ra', 
+                        'train' : MOVIELENS_SWITCH_SIM_PATH + 'ra.train.csv',
+                        'test'  : MOVIELENS_SWITCH_SIM_PATH + 'ra.test.csv',
+                        },
+    
+                        {'id'   : 'rb', 
+                        'train' : MOVIELENS_SWITCH_SIM_PATH + 'rb.train.csv',
+                        'test'  : MOVIELENS_SWITCH_SIM_PATH + 'rb.test.csv',
                         },
                     ]  
                 },

@@ -202,9 +202,9 @@ class ModelManager(object):
     def get_index_model(self, switch_predictions):
         return [self._get_index(model_id) for model_id in switch_predictions]
     
-    def get_similar_items(self, similarity_type, dataset, folder):
+    def get_similar_items(self, similarity_type, dataset, folder, k = 50):
         model_id = 'item_based4'
         if similarity_type == 'cosine':
             model_id = 'item_based1'
         rec_model = self._get_model(model_id)
-        return rec_model.get_similar_items(dataset, folder, k = 50)
+        return rec_model.get_similar_items(dataset, folder, k)
