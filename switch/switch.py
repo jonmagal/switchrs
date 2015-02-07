@@ -5,8 +5,7 @@ Created on 10/01/2015
 @author: Jonathas Magalhães
 '''
 
-from settings import SWITCH_MODELS_PATH, SWITCH_CLASS_PREDICTION_PATH, SWITCH_RATING_PREDICTION_PATH,\
-    MOVIELENS_SWITCH_PATH, SWITCH_CONF
+from settings import SWITCH_MODELS_PATH, SWITCH_CLASS_PREDICTION_PATH, SWITCH_RATING_PREDICTION_PATH, SWITCH_CONF
 from rclassifiers import RCLassifier
 
 class SwitchModel(object):
@@ -47,10 +46,13 @@ class SwitchModel(object):
             print 'Starting to train switch model ' + self.id + '.'
             train_file  = folder.train_file
             
+            classifier = RCLassifier()
             if self.model_type == 'naive_bayes':
-                classifier = RCLassifier()
                 classifier.naive_train(train_file, model_file)
-    
+            
+            elif self.model_type == 'svm':
+                classifier.svm_train(train_file, model_file)
+                
     def test_switch(self, dataset_switch, force):
         import os
         
@@ -68,10 +70,12 @@ class SwitchModel(object):
             print 'Starting to test switch model ' + self.id + '.'
             test_file   = folder.test_file
             
+            classifier = RCLassifier()
             if self.model_type == 'naive_bayes':
-                classifier = RCLassifier()
                 classifier.naive_test(test_file, model_file, prediction_file)
-    
+            
+            elif self.model_type == 'svm':
+                classifier.svm_test(test_file, model_file)
     
     def rating_prediction_switch(self, dataset, dataset_switch, model_manager, force):
         from graphlab.data_structures.sframe import SFrame

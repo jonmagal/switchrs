@@ -59,7 +59,7 @@ class Experiment():
         
     def _test_switch(self):
         self.switch_manager.rating_prediction_switches(dataset = self.dataset, dataset_switch = self.dataset_switch, 
-                         model_manager = self.model_manager, force = False)
+                         model_manager = self.model_manager, force = self.force)
     
     def _evaluate(self):
         self.evaluator.evaluate(dataset = self.dataset, dataset_switch = self.dataset_switch, 
