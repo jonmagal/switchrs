@@ -121,10 +121,11 @@ class DataSet(object):
                 similar_items_cosine    = model_manager.get_similar_items(similarity_type = 'cosine', dataset = dataset, 
                                                                           folder = folder)
                 similar_items_cosine.remove_columns(['similar', 'rank'])
+                
                 cosine_mean = similar_items_cosine.groupby(key_columns = 'item_id', 
                                                            operations = {'cosine_mean': agg.MEAN('score')})
                 cosine_sd   = similar_items_cosine.groupby(key_columns = 'item_id', 
-                                                           operations = {'cosine_sd': agg.MEAN('score')})
+                                                           operations = {'cosine_sd': agg.STD('score')})
                 cosine_top  = similar_items_cosine[similar_items_cosine['score'] > 0.5]
                 
                 cosine_top_count = cosine_top.groupby('item_id', operations = {'cosine_top_count': agg.COUNT()})
@@ -134,17 +135,19 @@ class DataSet(object):
                 similar_items_pearson   = model_manager.get_similar_items(similarity_type = 'pearson', 
                                                                           dataset = dataset, folder = folder)
                 similar_items_pearson.remove_columns(['similar', 'rank'])
+                
                 pearson_mean = similar_items_pearson.groupby(key_columns = 'item_id', 
-                                                           operations = {'cosine_mean': agg.MEAN('score')})
+                                                           operations = {'pearson_mean': agg.MEAN('score')})
                 pearson_sd   = similar_items_pearson.groupby(key_columns = 'item_id', 
-                                                           operations = {'cosine_sd': agg.MEAN('score')})
+                                                           operations = {'pearson_sd': agg.STD('score')})
                 pearson_top  = similar_items_pearson[similar_items_pearson['score'] > 0.5]
                 
-                pearson_top_count = pearson_top.groupby('item_id', operations = {'cosine_top_count': agg.COUNT()})
+                pearson_top_count = pearson_top.groupby('item_id', operations = {'pearson_top_count': agg.COUNT()})
                 
-                item_attr.extend([cosine_mean, cosine_sd, cosine_top, cosine_top_count, pearson_mean, pearson_sd, 
-                                  pearson_top, pearson_top_count])
+                new_attr = [cosine_mean, cosine_sd, cosine_top_count, pearson_mean, pearson_sd, pearson_top_count]
                 
+                item_attr.extend(new_attr)
+                    
             if not test:
                 if by_item:
                     test_sframe = item_attr.pop()
